@@ -1,0 +1,930 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FAF8F4;--bg2:#F0EDE6;--bg3:#E8E4DC;--card:#FFFFFF;
+  --border:#D8D3CA;--border2:#C8C2B8;--text:#2C2C2C;--muted:#7A7570;--dim:#B0A99F;
+  --indigo:#2D4A8A;--indigo-t:#EBF0FA;--green:#2E6B4F;--green-t:#E8F4EE;
+  --correct:#5C4A9E;--success:#4A7C59;--error:#C0392B;--error-t:#FAEAEA;
+  --amber:#B07D2E;--amber-t:#FBF3E2;
+  --f-display:var(--font-serif);
+  --f-mono:var(--font-mono);
+  --f-body:var(--font-sans);
+}
+#root{
+  font-family:var(--f-body);
+  background:var(--bg);color:var(--text);
+  min-height:700px;border-radius:14px;overflow:hidden;position:relative
+}
+#root::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(0,0,0,0.022) 39px,rgba(0,0,0,0.022) 40px);pointer-events:none;z-index:0}
+.screen{display:none;flex-direction:column;min-height:700px;position:relative;z-index:1}
+.screen.active{display:flex}
+
+/* ── 내비게이션 ── */
+.nav-bar{display:flex;align-items:center;gap:12px;padding:14px 24px;background:var(--card);border-bottom:1.5px solid var(--border);flex-shrink:0}
+.nav-logo{font-family:var(--f-display);font-size:22px;color:var(--indigo);cursor:pointer;flex-shrink:0}
+.nav-tabs{display:flex;gap:4px;margin-left:auto}
+.nav-tab{padding:7px 18px;border-radius:7px;font-size:13px;letter-spacing:1px;color:var(--muted);cursor:pointer;transition:all .15s;border:none;background:none;font-family:var(--f-mono)}
+.nav-tab:hover{background:var(--bg2);color:var(--text)}
+.nav-tab.active{background:var(--indigo-t);color:var(--indigo);font-weight:500}
+
+/* ── 홈 ── */
+#s-home{padding:48px 32px;align-items:center;justify-content:center}
+.home-eyebrow{font-size:12px;letter-spacing:4px;color:var(--muted);margin-bottom:20px;font-family:var(--f-mono)}
+.home-title{font-family:var(--f-display);font-size:60px;color:var(--text);line-height:1;margin-bottom:8px;text-align:center}
+.home-title em{color:var(--indigo);font-style:italic}
+.home-sub{font-size:13px;color:var(--muted);letter-spacing:2px;margin-bottom:44px;text-align:center;font-family:var(--f-mono)}
+.exam-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:560px;margin-bottom:32px}
+.exam-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:26px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.exam-card::after{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:var(--ca,var(--indigo))}
+.exam-card:hover{border-color:var(--ca,var(--indigo));transform:translateY(-2px)}
+.exam-card.selected{border-color:var(--ca,var(--indigo));background:var(--ct,var(--indigo-t))}
+.card-icon{font-size:28px;margin-bottom:12px}
+.card-name{font-size:16px;font-weight:500;color:var(--text);margin-bottom:5px;font-family:var(--f-body)}
+.card-desc{font-size:13px;color:var(--muted);line-height:1.5;font-family:var(--f-body)}
+.card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.tag{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--border);color:var(--muted);font-family:var(--f-mono)}
+.btn-start{padding:15px 48px;border-radius:10px;border:none;background:var(--indigo);color:white;font-family:var(--f-mono);font-size:14px;letter-spacing:2px;cursor:pointer;transition:all .2s}
+.btn-start:hover{background:#243d75;transform:translateY(-1px)}
+.btn-start:disabled{background:var(--dim);cursor:not-allowed;transform:none}
+
+/* ── 파트 선택 ── */
+#s-part{padding:28px}
+.back-row{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.back-btn{background:none;border:1.5px solid var(--border);color:var(--muted);padding:7px 15px;border-radius:7px;cursor:pointer;font-family:var(--f-mono);font-size:13px;transition:all .15s}
+.back-btn:hover{border-color:var(--indigo);color:var(--indigo)}
+.back-title{font-size:17px;font-weight:500;color:var(--text);font-family:var(--f-body)}
+.back-cnt{font-size:13px;color:var(--muted);margin-left:auto;font-family:var(--f-mono)}
+.part-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.part-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all .18s;position:relative}
+.part-card:hover{border-color:var(--indigo);transform:translateY(-1px)}
+.part-card.custom{border-style:dashed;border-color:var(--amber);background:var(--amber-t)}
+.part-card-cnt{position:absolute;top:12px;right:12px;font-size:11px;color:var(--muted);background:var(--bg2);padding:3px 9px;border-radius:5px;font-family:var(--f-mono)}
+.part-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;font-family:var(--f-body)}
+.part-desc{font-size:12px;color:var(--muted);line-height:1.4;font-family:var(--f-body)}
+.part-card.custom .part-name{color:var(--amber)}
+
+/* ── 게임 HUD ── */
+#s-game{flex-direction:column}
+.g-hud{display:flex;align-items:center;padding:12px 22px;background:var(--card);border-bottom:1.5px solid var(--border);flex-shrink:0;gap:0}
+.g-badge{font-size:12px;font-weight:500;letter-spacing:2px;padding:5px 12px;border-radius:5px;margin-right:14px;font-family:var(--f-mono)}
+.g-pname{font-size:14px;color:var(--muted);flex:1;font-family:var(--f-body)}
+.g-stats{display:flex;gap:22px;margin-right:16px}
+.g-stat{font-size:13px;color:var(--muted);font-family:var(--f-mono)}
+.g-stat b{color:var(--text);font-weight:500}
+/* 나가기 버튼 */
+.g-exit-btn{
+  background:none;border:1.5px solid var(--border);color:var(--muted);
+  padding:6px 14px;border-radius:7px;cursor:pointer;
+  font-family:var(--f-mono);font-size:12px;letter-spacing:1px;
+  transition:all .15s;flex-shrink:0;
+}
+.g-exit-btn:hover{border-color:var(--error);color:var(--error);background:var(--error-t)}
+
+/* ── 게임 바디 ── */
+.g-body{flex:1;display:flex;flex-direction:column;padding:22px;gap:16px}
+
+.prog-row{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.prog-lbl{font-size:12px;color:var(--muted);letter-spacing:1px;font-family:var(--f-mono)}
+.prog-track{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .35s ease}
+.prog-cnt{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+
+.dot-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s}
+.dot.done{background:var(--success)}
+.dot.cur{background:var(--indigo);transform:scale(1.5)}
+
+/* ── 단어 카드 ── */
+.word-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:24px 26px;flex-shrink:0}
+.wc-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.wc-label{font-size:12px;letter-spacing:2px;color:var(--muted);font-family:var(--f-mono)}
+.wc-div{flex:1;height:1px;background:var(--border)}
+.wc-mean{font-size:18px;color:var(--text);line-height:1.65;font-family:var(--f-body);font-weight:500}
+.wc-ctx{font-size:14px;color:var(--muted);font-family:var(--f-body);font-style:italic;margin-top:8px;padding-left:12px;border-left:3px solid var(--border);line-height:1.55}
+
+/* ── 타이핑 영역 ── */
+.type-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:160px;position:relative}
+.tw{font-size:40px;font-weight:500;letter-spacing:6px;text-align:center;min-height:56px;font-family:var(--f-mono)}
+.tw-done{color:var(--correct)}
+.tw-cur{color:var(--text);opacity:.3}
+.tw-err{color:var(--error);text-decoration:underline wavy var(--error)}
+.caret{display:inline-block;width:2px;height:38px;background:var(--indigo);vertical-align:middle;animation:blink 1s infinite;border-radius:1px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.shake{animation:shake .2s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+.hint-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.chip{font-size:12px;color:var(--muted);padding:4px 13px;border:1px solid var(--border);border-radius:20px;background:var(--bg2);font-family:var(--f-mono)}
+.chip.combo{color:var(--amber);border-color:var(--amber);background:var(--amber-t);display:none}
+.pop{position:absolute;font-size:14px;font-weight:500;pointer-events:none;animation:popUp .7s ease-out forwards;font-family:var(--f-mono)}
+@keyframes popUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-50px)}}
+
+/* 한글 입력 모드 표시 */
+.lang-badge{
+  font-size:11px;padding:3px 10px;border-radius:12px;
+  font-family:var(--f-mono);letter-spacing:1px;font-weight:500;
+  transition:all .2s;
+}
+.lang-badge.en{background:var(--indigo-t);color:var(--indigo);border:1px solid var(--indigo)}
+.lang-badge.ko{background:var(--green-t);color:var(--green);border:1px solid var(--green)}
+
+/* ── 입력행 ── */
+.g-input-row{padding:16px 22px;background:var(--card);border-top:1.5px solid var(--border);display:flex;gap:12px;align-items:center;flex-shrink:0}
+.g-prompt{color:var(--indigo);font-size:22px;font-family:var(--f-mono)}
+#g-input{flex:1;background:transparent;border:none;outline:none;font-family:var(--f-mono);font-size:22px;color:var(--text);caret-color:var(--indigo)}
+#g-input::placeholder{color:var(--dim)}
+.skip-btn{font-size:12px;color:var(--muted);background:none;border:1px solid var(--border);padding:6px 14px;border-radius:20px;cursor:pointer;font-family:var(--f-mono);transition:all .15s}
+.skip-btn:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-t)}
+
+/* ── 결과 ── */
+#s-result{align-items:center;justify-content:center;padding:40px;gap:18px}
+.res-icon{font-size:48px}
+.res-title{font-family:var(--f-display);font-size:46px;color:var(--text)}
+.res-sub{font-size:12px;color:var(--muted);letter-spacing:2px;font-family:var(--f-mono)}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:380px}
+.res-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:18px;text-align:center}
+.res-val{font-size:36px;font-weight:500;color:var(--indigo);font-family:var(--f-mono)}
+.res-lbl{font-size:12px;color:var(--muted);letter-spacing:1px;margin-top:4px;font-family:var(--f-mono)}
+.res-wrong{width:100%;max-width:480px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;max-height:200px;overflow-y:auto}
+.rw-head{padding:10px 16px;background:var(--error-t);border-bottom:1px solid var(--border);font-size:12px;color:var(--error);letter-spacing:1px;position:sticky;top:0;font-family:var(--f-mono)}
+.rw-item{display:flex;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);align-items:baseline}
+.rw-item:last-child{border:none}
+.rw-word{font-size:15px;font-weight:500;color:var(--text);min-width:130px;font-family:var(--f-mono)}
+.rw-mean{font-size:13px;color:var(--muted);font-family:var(--f-body)}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.btn-indigo{padding:12px 28px;border-radius:9px;border:1.5px solid var(--indigo);background:transparent;color:var(--indigo);font-family:var(--f-mono);font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .15s}
+.btn-indigo:hover{background:var(--indigo-t)}
+.btn-amber{padding:12px 28px;border-radius:9px;border:1.5px solid var(--amber);background:transparent;color:var(--amber);font-family:var(--f-mono);font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .15s}
+.btn-amber:hover{background:var(--amber-t)}
+.btn-gray{padding:12px 28px;border-radius:9px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--f-mono);font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .15s}
+.btn-gray:hover{border-color:var(--muted);color:var(--text)}
+
+/* ── 오답노트 ── */
+#s-wrong{padding:0}
+.page-body{padding:24px 28px;display:flex;flex-direction:column;flex:1}
+.page-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.page-title{font-family:var(--f-display);font-size:26px;color:var(--text)}
+.page-cnt{font-size:13px;color:var(--muted);margin-left:auto;font-family:var(--f-mono)}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted)}
+.empty-icon{font-size:42px;opacity:.4}
+.empty-text{font-size:14px;letter-spacing:1px;font-family:var(--f-mono)}
+.empty-sub{font-size:13px;color:var(--dim);font-family:var(--f-body);text-align:center}
+.note-list{display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:440px}
+.note-item{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px}
+.note-word{font-size:16px;font-weight:500;color:var(--text);min-width:140px;flex-shrink:0;font-family:var(--f-mono)}
+.note-info{flex:1}
+.note-mean{font-size:13px;color:var(--muted);font-family:var(--f-body);line-height:1.5;margin-bottom:5px}
+.note-meta{display:flex;gap:7px;align-items:center}
+.note-exam{font-size:11px;padding:2px 8px;border-radius:4px;font-family:var(--f-mono)}
+.note-cnt{font-size:11px;color:var(--error);font-family:var(--f-mono)}
+.note-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:15px;padding:3px 7px;border-radius:5px;transition:all .15s;flex-shrink:0}
+.note-del:hover{background:var(--error-t);color:var(--error)}
+.note-actions{display:flex;gap:10px;margin-top:16px}
+
+/* ── 직접 추가 ── */
+#s-custom{padding:0}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;display:block;font-family:var(--f-mono)}
+.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:var(--f-mono);font-size:15px;color:var(--text);background:var(--card);outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--amber)}
+.form-textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:var(--f-body);font-size:14px;color:var(--text);background:var(--card);outline:none;transition:border-color .15s;resize:none;line-height:1.6}
+.form-textarea:focus{border-color:var(--amber)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.add-btn{width:100%;padding:12px;border-radius:9px;border:none;background:var(--amber);color:white;font-family:var(--f-mono);font-size:13px;letter-spacing:2px;cursor:pointer;transition:all .15s;margin-bottom:20px}
+.add-btn:hover{background:#9a6c26}
+.section-divider{font-size:11px;letter-spacing:2px;color:var(--muted);margin:0 0 12px;padding-bottom:7px;border-bottom:1px solid var(--border);font-family:var(--f-mono)}
+.custom-list{display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:240px}
+.custom-item{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:13px 15px;display:flex;align-items:flex-start;gap:12px}
+.ci-word{font-size:15px;font-weight:500;color:var(--text);min-width:130px;flex-shrink:0;font-family:var(--f-mono)}
+.ci-info{flex:1}
+.ci-mean{font-size:13px;color:var(--muted);font-family:var(--f-body);margin-bottom:3px;line-height:1.5}
+.ci-ctx{font-size:12px;color:var(--dim);font-family:var(--f-body);font-style:italic}
+.ci-cat{font-size:11px;color:var(--amber);margin-top:3px;display:block;font-family:var(--f-mono)}
+.ci-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:15px;padding:3px 6px;border-radius:5px;transition:all .15s;flex-shrink:0}
+.ci-del:hover{background:var(--error-t);color:var(--error)}
+.custom-empty{font-size:13px;color:var(--muted);text-align:center;padding:20px;letter-spacing:1px;font-family:var(--f-mono)}
+.play-custom-btn{width:100%;padding:12px;border-radius:9px;border:1.5px solid var(--amber);background:var(--amber-t);color:var(--amber);font-family:var(--f-mono);font-size:13px;letter-spacing:2px;cursor:pointer;transition:all .15s;margin-top:12px}
+.play-custom-btn:hover{background:var(--amber);color:white}
+.play-custom-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── 토스트 ── */
+.toast{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:white;font-size:13px;padding:9px 22px;border-radius:22px;letter-spacing:1px;z-index:99;font-family:var(--f-mono);animation:fadeInOut 2s ease forwards;white-space:nowrap}
+@keyframes fadeInOut{0%{opacity:0;transform:translateX(-50%) translateY(8px)}15%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0}}
+</style>
+
+<div id="root">
+
+<!-- ═══════════════════════════ 홈 ═══════════════════════════ -->
+<div id="s-home" class="screen active">
+  <div class="home-eyebrow">EXAM TYPING TRAINER v4.0</div>
+  <div class="home-title">Type<em>Exam</em></div>
+  <div class="home-sub">정처기 실기 · 토익 — 파트별 타이핑 훈련</div>
+  <div class="exam-grid">
+    <div class="exam-card" style="--ca:var(--indigo);--ct:var(--indigo-t)" id="card-jcs" onclick="selExam('jcs')">
+      <div class="card-icon">💻</div>
+      <div class="card-name">정보처리기사 실기</div>
+      <div class="card-desc">핵심 영어 용어를 타이핑하며 자연스럽게 암기</div>
+      <div class="card-tags"><span class="tag">DB</span><span class="tag">알고리즘</span><span class="tag">네트워크</span><span class="tag">보안</span><span class="tag">SW공학</span></div>
+    </div>
+    <div class="exam-card" style="--ca:var(--green);--ct:var(--green-t)" id="card-toeic" onclick="selExam('toeic')">
+      <div class="card-icon">📝</div>
+      <div class="card-name">TOEIC</div>
+      <div class="card-desc">파트별 빈출 어휘를 반복 타이핑으로 체화</div>
+      <div class="card-tags"><span class="tag">Part 5</span><span class="tag">Part 6</span><span class="tag">Part 7</span><span class="tag">비즈니스</span></div>
+    </div>
+  </div>
+  <button class="btn-start" id="btn-go" disabled onclick="gopart()">파트 선택 →</button>
+</div>
+
+<!-- ═══════════════════════════ 파트 선택 ═══════════════════════════ -->
+<div id="s-part" class="screen">
+  <div class="nav-bar">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="goHome()">홈</button>
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">직접추가</button>
+    </div>
+  </div>
+  <div style="padding:24px 28px">
+    <div class="back-row">
+      <button class="back-btn" onclick="goHome()">← 뒤로</button>
+      <div class="back-title" id="part-title">—</div>
+      <div class="back-cnt" id="part-cnt"></div>
+    </div>
+    <div class="part-grid" id="part-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ 게임 ═══════════════════════════ -->
+<div id="s-game" class="screen">
+  <div class="g-hud">
+    <div class="g-badge" id="g-badge"></div>
+    <div class="g-pname" id="g-pname"></div>
+    <div class="g-stats">
+      <div class="g-stat">WPM <b id="g-wpm">0</b></div>
+      <div class="g-stat">ACC <b id="g-acc">100%</b></div>
+      <div class="g-stat">COMBO <b id="g-combo" style="color:var(--amber)">0</b></div>
+    </div>
+    <!-- 나가기 버튼 -->
+    <button class="g-exit-btn" onclick="exitGame()">✕ 나가기</button>
+  </div>
+  <div class="g-body">
+    <div class="prog-row">
+      <div class="prog-lbl">PROGRESS</div>
+      <div class="prog-track"><div class="prog-fill" id="g-prog" style="width:0%"></div></div>
+      <div class="prog-cnt" id="g-cnt">0/0</div>
+    </div>
+    <div class="dot-row" id="dot-row"></div>
+    <div class="word-card">
+      <div class="wc-top">
+        <div class="wc-label" id="wc-lbl">DEFINITION</div>
+        <div class="wc-div"></div>
+        <!-- 언어 배지: 현재 단어가 한글인지 영어인지 표시 -->
+        <span class="lang-badge en" id="lang-badge">EN</span>
+      </div>
+      <div class="wc-mean" id="wc-mean">—</div>
+      <div class="wc-ctx" id="wc-ctx"></div>
+    </div>
+    <div class="type-area" id="type-area">
+      <div class="tw" id="tw"><span class="caret"></span></div>
+      <div class="hint-row">
+        <span class="chip" id="h-len">— 글자</span>
+        <span class="chip" id="h-first">첫 글자: —</span>
+        <span class="chip combo" id="h-combo">🔥 COMBO!</span>
+      </div>
+    </div>
+  </div>
+  <div class="g-input-row">
+    <div class="g-prompt">›</div>
+    <input id="g-input" type="text" placeholder="여기에 타이핑..." autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="off"/>
+    <button class="skip-btn" onclick="skip()">SKIP</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ 결과 ═══════════════════════════ -->
+<div id="s-result" class="screen" style="align-items:center;justify-content:center">
+  <div class="res-icon" id="res-icon">🎉</div>
+  <div class="res-title">Result</div>
+  <div class="res-sub" id="res-sub">SESSION COMPLETE</div>
+  <div class="res-grid">
+    <div class="res-card"><div class="res-val" id="r-wpm">0</div><div class="res-lbl">AVG WPM</div></div>
+    <div class="res-card"><div class="res-val" id="r-acc">0%</div><div class="res-lbl">ACCURACY</div></div>
+    <div class="res-card"><div class="res-val" id="r-words">0</div><div class="res-lbl">WORDS</div></div>
+    <div class="res-card"><div class="res-val" id="r-combo">0</div><div class="res-lbl">BEST COMBO</div></div>
+  </div>
+  <div class="res-wrong" id="res-wrong" style="display:none">
+    <div class="rw-head">오답 복습</div>
+    <div id="rw-list"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-indigo" onclick="retry()">↺ 다시 풀기</button>
+    <button class="btn-amber" onclick="saveWrong()">오답노트 저장</button>
+    <button class="btn-gray" onclick="goHome()">홈으로</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ 오답노트 ═══════════════════════════ -->
+<div id="s-wrong" class="screen">
+  <div class="nav-bar">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button class="nav-tab" onclick="goHome()">홈</button>
+      <button class="nav-tab active" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">직접추가</button>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="page-header">
+      <div class="page-title">오답 노트</div>
+      <div class="page-cnt" id="wrong-cnt">0개</div>
+    </div>
+    <div id="wrong-empty" class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-text">아직 저장된 오답이 없어요</div>
+      <div class="empty-sub">게임 종료 후 '오답노트 저장'을 누르면 여기에 쌓여요</div>
+    </div>
+    <div id="wrong-list" class="note-list" style="display:none"></div>
+    <div id="wrong-actions" style="display:none" class="note-actions">
+      <button class="btn-amber" onclick="playWrong()" style="flex:1">오답만 다시 풀기 →</button>
+      <button class="btn-gray" onclick="clearWrong()">전체 삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ 직접 추가 ═══════════════════════════ -->
+<div id="s-custom" class="screen">
+  <div class="nav-bar">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button class="nav-tab" onclick="goHome()">홈</button>
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab active" onclick="showScreen('s-custom')">직접추가</button>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="page-header" style="margin-bottom:16px">
+      <div class="page-title">직접 추가</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">WORD (영어 또는 한글)</label>
+        <input class="form-input" id="f-word" placeholder="예: normalization  또는  정규화" autocomplete="off" spellcheck="false"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">CATEGORY</label>
+        <input class="form-input" id="f-cat" placeholder="예: 정처기 심화" autocomplete="off"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">MEANING — 타이핑 중 보여질 뜻</label>
+      <textarea class="form-textarea" id="f-mean" rows="2" placeholder="예: 데이터 중복을 제거하여 DB를 효율적으로 설계하는 과정"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">CONTEXT — 예문 또는 헷갈리는 개념 메모 (선택)</label>
+      <textarea class="form-textarea" id="f-ctx" rows="2" placeholder="예: 1NF→2NF→3NF→BCNF / 트랜잭션과 혼동 주의"></textarea>
+    </div>
+    <button class="add-btn" onclick="addCustom()">+ 단어 추가</button>
+    <div class="section-divider">저장된 단어 목록</div>
+    <div id="custom-list" class="custom-list"></div>
+    <div id="custom-empty" class="custom-empty">아직 추가한 단어가 없어요</div>
+    <button class="play-custom-btn" id="play-custom-btn" disabled onclick="playCustom()">직접 추가 단어로 게임 시작 →</button>
+  </div>
+</div>
+
+</div><!-- /#root -->
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  데이터베이스
+// ══════════════════════════════════════════════════════════════════
+const DB={
+  jcs:{name:'정보처리기사 실기',badge:'정처기',prog:'#2D4A8A',
+    parts:{
+      '데이터베이스':{desc:'SQL, 정규화, 트랜잭션',items:[
+        {w:'normalization',m:'데이터 중복을 제거하여 DB를 효율적으로 설계하는 과정',c:'1NF→2NF→3NF→BCNF 단계로 진행된다'},
+        {w:'transaction',m:'DB 상태를 변환하는 하나의 논리적 작업 단위',c:'ACID — 원자성, 일관성, 격리성, 지속성을 보장해야 한다'},
+        {w:'index',m:'검색 속도를 향상시키기 위해 사용하는 데이터 구조',c:'B-Tree, Hash 인덱스 등이 있으며 DML 성능에 영향을 준다'},
+        {w:'deadlock',m:'두 트랜잭션이 서로의 자원을 기다리며 무한 대기하는 상태',c:'예방, 회피, 탐지, 복구 4가지 방법으로 해결한다'},
+        {w:'trigger',m:'특정 이벤트 발생 시 자동으로 실행되는 프로시저',c:'INSERT, UPDATE, DELETE 이벤트에 연결하여 사용한다'},
+        {w:'view',m:'하나 이상의 테이블을 기반으로 만든 가상 테이블',c:'데이터 보안과 복잡한 쿼리 단순화에 활용된다'},
+        {w:'rollback',m:'트랜잭션 오류 발생 시 이전 상태로 되돌리는 연산',c:'COMMIT 이전 상태로 DB를 복원한다'},
+        {w:'schema',m:'데이터베이스 구조와 제약조건을 정의한 메타데이터',c:'외부, 개념, 내부 스키마 3단계로 나눈다'},
+        {w:'join',m:'둘 이상의 테이블을 연결하여 데이터를 조회하는 연산',c:'INNER, LEFT, RIGHT, FULL OUTER JOIN이 있다'},
+        {w:'subquery',m:'다른 쿼리 내부에 포함된 SELECT 문',c:'스칼라, 인라인 뷰, 중첩 서브쿼리로 구분된다'},
+      ]},
+      '알고리즘':{desc:'정렬, 탐색, 자료구조',items:[
+        {w:'quicksort',m:'피벗을 기준으로 분할하는 평균 O(n log n) 정렬',c:'최악의 경우 O(n²), 불안정 정렬'},
+        {w:'recursion',m:'함수가 자기 자신을 호출하는 프로그래밍 기법',c:'반드시 기저 조건(Base Case)이 있어야 한다'},
+        {w:'stack',m:'후입선출(LIFO) 방식의 선형 자료구조',c:'함수 호출, DFS, 괄호 검사에 활용'},
+        {w:'queue',m:'선입선출(FIFO) 방식의 선형 자료구조',c:'BFS, 프린터 스풀링, 프로세스 스케줄링에 활용'},
+        {w:'hashing',m:'키를 해시 함수로 변환하여 데이터를 저장하는 기법',c:'평균 O(1) 탐색, 충돌 처리 필요'},
+        {w:'complexity',m:'알고리즘의 실행 시간이나 공간 사용량 분석 지표',c:'O(1), O(n), O(n log n), O(n²)'},
+        {w:'dijkstra',m:'단일 출발점에서 모든 노드까지 최단 경로 알고리즘',c:'음의 가중치 없는 그래프에서 사용'},
+        {w:'greedy',m:'각 단계에서 최선의 선택을 하는 알고리즘 설계',c:'최적 해를 항상 보장하지는 않는다'},
+        {w:'binary',m:'정렬된 배열에서 O(log n)으로 탐색하는 이진 탐색',c:'중간값과 비교하며 절반씩 범위를 줄인다'},
+        {w:'dynamic',m:'부분 문제 결과를 저장하며 해결하는 알고리즘 기법',c:'메모이제이션과 타뷸레이션 방식이 있다'},
+      ]},
+      '네트워크':{desc:'OSI 7계층, 프로토콜',items:[
+        {w:'protocol',m:'컴퓨터 간 데이터 통신을 위한 규칙과 절차 집합',c:'TCP/IP가 인터넷의 표준 프로토콜'},
+        {w:'routing',m:'패킷이 목적지까지 전달될 경로를 결정하는 과정',c:'정적 라우팅과 동적 라우팅으로 구분'},
+        {w:'firewall',m:'네트워크 트래픽을 모니터링하고 제어하는 보안 시스템',c:'패킷 필터링, 상태 검사, 응용 게이트웨이 방식'},
+        {w:'subnet',m:'하나의 IP 네트워크를 여러 개의 작은 네트워크로 분할',c:'서브넷 마스크로 네트워크/호스트 부분 구분'},
+        {w:'bandwidth',m:'단위 시간당 전송 가능한 데이터의 최대 양',c:'bps(bits per second) 단위로 측정'},
+        {w:'gateway',m:'서로 다른 네트워크를 연결하는 장치 또는 소프트웨어',c:'OSI 7계층 전체에서 동작, 프로토콜 변환'},
+        {w:'ethernet',m:'유선 LAN에서 가장 널리 사용되는 네트워크 기술',c:'CSMA/CD 방식으로 충돌 감지 및 처리'},
+        {w:'packet',m:'네트워크에서 전송되는 데이터의 기본 단위',c:'헤더와 페이로드로 구성'},
+        {w:'latency',m:'데이터가 출발지에서 목적지까지 전달되는 시간',c:'RTT(Round Trip Time)로 측정, ms 단위'},
+        {w:'switch',m:'MAC 주소 기반으로 데이터를 목적지에 전달하는 장치',c:'OSI 2계층(데이터링크)에서 동작'},
+      ]},
+      '보안':{desc:'암호화, 인증, 취약점',items:[
+        {w:'encryption',m:'데이터를 암호화 알고리즘으로 변환하여 보호하는 과정',c:'대칭키(AES)와 비대칭키(RSA) 방식으로 구분'},
+        {w:'phishing',m:'신뢰할 수 있는 대상을 사칭하여 개인정보를 탈취하는 공격',c:'이메일, SMS, 전화를 통한 사회공학적 공격'},
+        {w:'malware',m:'시스템에 해를 끼치도록 설계된 악성 소프트웨어',c:'바이러스, 웜, 트로이목마, 랜섬웨어 포함'},
+        {w:'injection',m:'악의적인 코드를 입력으로 삽입하는 보안 공격',c:'SQL 인젝션 대표적, OWASP Top 10 포함'},
+        {w:'backdoor',m:'인증 절차를 우회하여 시스템에 접근하는 숨겨진 경로',c:'공격자가 지속적 접근을 위해 설치'},
+        {w:'spoofing',m:'신뢰할 수 있는 주체로 위장하여 시스템을 속이는 공격',c:'IP, MAC, ARP 스푸핑 등 다양한 형태'},
+        {w:'ransomware',m:'파일을 암호화하고 복호화 대가로 금전을 요구하는 악성코드',c:'WannaCry, Petya 등이 대표적 사례'},
+        {w:'authentication',m:'사용자나 시스템의 신원을 확인하는 과정',c:'지식, 소유, 생체인식 기반 3가지 요소'},
+        {w:'vulnerability',m:'시스템의 보안 취약점으로 공격자가 악용할 수 있는 결함',c:'CVE(Common Vulnerabilities and Exposures)로 관리'},
+        {w:'hashing',m:'임의 크기 데이터를 고정 크기 값으로 변환하는 단방향 함수',c:'SHA-256, MD5 — 무결성 검증에 사용'},
+      ]},
+      '소프트웨어공학':{desc:'방법론, 테스트, 설계 패턴',items:[
+        {w:'refactoring',m:'외부 동작 변경 없이 내부 코드 구조를 개선하는 작업',c:'코드 가독성과 유지보수성 향상'},
+        {w:'cohesion',m:'모듈 내부 요소들이 얼마나 밀접하게 관련되어 있는지 척도',c:'높을수록 좋으며 기능적 응집이 가장 높다'},
+        {w:'coupling',m:'모듈 간의 상호 의존 정도를 나타내는 척도',c:'낮을수록 좋으며 자료 결합이 가장 낮다'},
+        {w:'agile',m:'짧은 개발 주기를 반복하며 변화에 빠르게 대응하는 방법론',c:'스크럼, 칸반, XP가 대표적'},
+        {w:'prototype',m:'시스템의 주요 기능을 구현한 초기 모델',c:'요구사항 명확화와 사용자 피드백 반영 목적'},
+        {w:'inheritance',m:'부모 클래스의 속성과 메서드를 자식 클래스가 물려받는 개념',c:'코드 재사용성 향상, 다형성의 기반'},
+        {w:'encapsulation',m:'객체의 데이터와 메서드를 하나로 묶고 외부 접근을 제한하는 원칙',c:'정보 은닉으로 모듈 간 의존성 감소'},
+        {w:'polymorphism',m:'같은 인터페이스로 다양한 객체 타입을 다룰 수 있는 능력',c:'오버로딩과 오버라이딩으로 구현'},
+        {w:'singleton',m:'클래스 인스턴스를 하나만 생성하도록 보장하는 디자인 패턴',c:'전역 상태 관리와 자원 공유에 활용'},
+        {w:'interface',m:'두 시스템이나 컴포넌트 사이의 상호작용 지점 명세',c:'API가 대표적, 구현 세부 사항을 숨긴다'},
+      ]},
+    }
+  },
+  toeic:{name:'TOEIC',badge:'TOEIC',prog:'#2E6B4F',
+    parts:{
+      'Part 5 — 어법':{desc:'단문 빈칸 핵심 어휘',items:[
+        {w:'subsequent',m:'그 다음의, 이후의 — 시간적으로 뒤에 오는',c:'Subsequent meetings will be held every Monday.'},
+        {w:'mandatory',m:'의무적인, 강제적인 — 법이나 규정에 의해 요구되는',c:'Attendance at the safety training is mandatory.'},
+        {w:'designated',m:'지정된, 선임된 — 특정 역할이나 위치를 위해 선택된',c:'Please park in the designated area only.'},
+        {w:'provisional',m:'임시의, 잠정적인 — 최종 확정 전 일시적인',c:'A provisional agreement was reached yesterday.'},
+        {w:'reimburse',m:'상환하다, 변상하다 — 비용을 돌려주다',c:'The company will reimburse all travel expenses.'},
+        {w:'negotiate',m:'협상하다, 교섭하다 — 합의를 이끌어내다',c:'We need to negotiate better contract terms.'},
+        {w:'terminate',m:'종료하다, 해지하다 — 계약이나 고용을 끝내다',c:'Either party may terminate this agreement.'},
+        {w:'facilitate',m:'촉진하다, 용이하게 하다 — 과정을 더 쉽게 만들다',c:'The new software will facilitate communication.'},
+        {w:'sufficient',m:'충분한 — 필요를 충족하기에 넉넉한',c:'Please allow sufficient time for review.'},
+        {w:'pursuant',m:'~에 따라, ~에 의거하여',c:'Pursuant to company policy, all employees must...'},
+      ]},
+      'Part 5 — 어휘':{desc:'빈출 비즈니스 어휘',items:[
+        {w:'implement',m:'시행하다, 구현하다 — 계획이나 결정을 실행에 옮기다',c:'The policy will be implemented next quarter.'},
+        {w:'acquisition',m:'인수, 획득 — 기업이나 자산을 사들이는 행위',c:'The acquisition of the startup was completed.'},
+        {w:'initiative',m:'주도권, 계획 — 새로운 프로젝트나 행동 방침',c:'The green initiative aims to reduce emissions.'},
+        {w:'comprehensive',m:'포괄적인, 종합적인 — 모든 면을 다루는',c:'A comprehensive review of the budget is needed.'},
+        {w:'collaborate',m:'협력하다, 공동 작업하다',c:'Our teams will collaborate on this project.'},
+        {w:'feasibility',m:'실현 가능성 — 계획이나 아이디어가 실행 가능한지 여부',c:'We must conduct a feasibility study first.'},
+        {w:'inventory',m:'재고, 재물 목록 — 보유 물품의 총량이나 목록',c:'Please update the inventory records weekly.'},
+        {w:'deadline',m:'마감 기한 — 작업이 완료되어야 하는 날짜나 시간',c:'The project deadline is end of this month.'},
+        {w:'executive',m:'임원, 경영진 — 조직의 고위 관리자',c:'The executive team approved the new strategy.'},
+        {w:'commodity',m:'상품, 원자재 — 시장에서 거래되는 기본 상품',c:"Oil is the world's most traded commodity."},
+      ]},
+      'Part 6 — 문맥':{desc:'장문 빈칸 고난도 어휘',items:[
+        {w:'accordingly',m:'그에 따라, 적절하게 — 결과나 상황에 맞게',c:'Please adjust your schedule accordingly.'},
+        {w:'nevertheless',m:'그럼에도 불구하고 — 앞 내용과 반대되는 내용 연결',c:'Results were poor; nevertheless, we continue.'},
+        {w:'furthermore',m:'게다가, 더욱이 — 추가 정보를 덧붙일 때',c:'Furthermore, the cost has been reduced by 20%.'},
+        {w:'incumbent',m:'현직의 / 의무로 지워진',c:'It is incumbent upon us to notify all clients.'},
+        {w:'liability',m:'책임, 부채 — 법적 의무나 재정적 채무',c:'The company accepts no liability for damages.'},
+        {w:'contingent',m:'~에 달려있는, 조건부의',c:'The deal is contingent on board approval.'},
+        {w:'consolidate',m:'통합하다, 강화하다 — 합치거나 더 강하게 만들다',c:'We plan to consolidate our offices into one.'},
+        {w:'disparity',m:'불균형, 격차 — 두 가지 사이의 큰 차이',c:'The disparity in wages needs to be addressed.'},
+        {w:'scrutinize',m:'면밀히 조사하다, 정밀 검토하다',c:'The auditors will scrutinize all financial records.'},
+        {w:'subsequent',m:'그 다음의, 이후에 발생하는',c:'Subsequent analysis revealed unexpected results.'},
+      ]},
+      'Part 7 — 독해':{desc:'지문 독해 필수 단어',items:[
+        {w:'amendment',m:'수정, 개정 — 법률이나 문서에 대한 공식적인 변경',c:'An amendment to the contract was proposed.'},
+        {w:'warranty',m:'품질 보증, 보증서 — 제품 결함에 대한 보장',c:'The product comes with a two-year warranty.'},
+        {w:'renovation',m:'개조, 수리 — 건물이나 시설의 대대적인 수리',c:'The hotel is closed for renovation this winter.'},
+        {w:'itinerary',m:'여행 일정표 — 여행 계획의 세부 사항',c:'Please send the final itinerary by Friday.'},
+        {w:'subscription',m:'구독, 정기 구입 — 정기적으로 비용을 내고 이용',c:'Your subscription will renew automatically.'},
+        {w:'credentials',m:'자격증명, 인증서 — 능력이나 자격을 증명하는 서류',c:'Please submit your credentials with the application.'},
+        {w:'subsidiary',m:'자회사 — 모기업에 속한 하위 기업',c:'The subsidiary operates in Southeast Asia.'},
+        {w:'prerequisite',m:'전제 조건, 필수 요건',c:'A degree is a prerequisite for this position.'},
+        {w:'reimbursement',m:'상환, 변제 — 지출한 비용을 돌려받는 것',c:'Submit receipts for expense reimbursement.'},
+        {w:'fluctuation',m:'변동, 등락 — 가격이나 수치의 오르내림',c:'Price fluctuation affects our profit margin.'},
+      ]},
+      '비즈니스 영어':{desc:'실무 이메일·회의 표현',items:[
+        {w:'agenda',m:'안건, 의제 — 회의에서 다룰 항목의 목록',c:'Please review the agenda before the meeting.'},
+        {w:'stakeholder',m:'이해관계자 — 프로젝트나 사업에 이해관계가 있는 사람',c:'All stakeholders must approve the proposal.'},
+        {w:'benchmark',m:'기준점, 벤치마크 — 성과를 비교하는 기준',c:'Our sales exceeded the industry benchmark.'},
+        {w:'leverage',m:'활용하다 — 이점을 최대한 이용하다',c:'We can leverage our existing network.'},
+        {w:'forecast',m:'예측, 예보하다 — 미래의 상황이나 수치를 예상하다',c:'Q4 revenue forecast looks promising.'},
+        {w:'overhead',m:'간접비, 경상비 — 제품 생산과 직접 관련 없는 운영 비용',c:'We need to reduce our overhead costs.'},
+        {w:'compliance',m:'준수, 규정 준수 — 법규나 규정을 따르는 것',c:'All departments must ensure regulatory compliance.'},
+        {w:'projection',m:'추정, 예상 — 미래 수치나 상황에 대한 계산',c:'The sales projection for next year is optimistic.'},
+        {w:'synergy',m:'시너지, 상승효과 — 협력으로 더 큰 효과를 내는 것',c:'The merger creates synergy between the teams.'},
+        {w:'portfolio',m:'포트폴리오, 작품집 — 투자 자산이나 작품의 모음',c:'Our investment portfolio is well-diversified.'},
+      ]},
+    }
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  상태 변수
+// ══════════════════════════════════════════════════════════════════
+let exam=null,partKey=null,words=[],idx=0,typed='';
+let combo=0,bestCombo=0,totalWords=0,totalChars=0,totalErrors=0;
+let startTime=null,sessionWrong=[],wpmTimer=null;
+let wrongNote=[];let customWords=[];
+// 한글 IME 조합 중인지 추적
+let isComposing=false;
+
+try{wrongNote=JSON.parse(localStorage.getItem('te_wrong')||'[]');}catch(e){}
+try{customWords=JSON.parse(localStorage.getItem('te_custom')||'[]');}catch(e){}
+
+function save(){
+  try{
+    localStorage.setItem('te_wrong',JSON.stringify(wrongNote));
+    localStorage.setItem('te_custom',JSON.stringify(customWords));
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  유틸
+// ══════════════════════════════════════════════════════════════════
+function toast(msg){
+  const existing=document.querySelector('.toast');if(existing)existing.remove();
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.getElementById('root').appendChild(t);setTimeout(()=>t.remove(),2100);
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='s-wrong')renderWrong();
+  if(id==='s-custom')renderCustom();
+}
+
+/** 현재 단어가 한글인지 판별 */
+function isKorean(w){
+  return /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(w);
+}
+
+/** 한글 단어용 정규화: 자모 분리 없이 완성된 글자 단위로 비교
+ *  영어는 toLowerCase 비교, 한글은 그대로 비교 */
+function wordsMatch(input, target){
+  if(isKorean(target)){
+    return input===target;
+  }
+  return input.toLowerCase()===target.toLowerCase();
+}
+
+/** 올바른 접두사인지 확인 */
+function isValidPrefix(input, target){
+  if(isKorean(target)){
+    return target.startsWith(input);
+  }
+  return target.toLowerCase().startsWith(input.toLowerCase());
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  화면 이동
+// ══════════════════════════════════════════════════════════════════
+function goHome(){
+  exam=null;
+  ['jcs','toeic'].forEach(k=>document.getElementById('card-'+k).classList.remove('selected'));
+  document.getElementById('btn-go').disabled=true;
+  showScreen('s-home');
+}
+
+function selExam(key){
+  exam=key;
+  ['jcs','toeic'].forEach(k=>document.getElementById('card-'+k).classList.remove('selected'));
+  document.getElementById('card-'+key).classList.add('selected');
+  document.getElementById('btn-go').disabled=false;
+}
+
+function gopart(){
+  if(!exam)return;
+  const d=DB[exam];
+  document.getElementById('part-title').textContent=d.name;
+  const pkeys=Object.keys(d.parts);
+  document.getElementById('part-cnt').textContent=pkeys.length+'개 파트';
+  const grid=document.getElementById('part-grid');
+  grid.innerHTML='';
+  pkeys.forEach(k=>{
+    const pt=d.parts[k];
+    const el=document.createElement('div');
+    el.className='part-card';
+    el.innerHTML=`<div class="part-card-cnt">${pt.items.length}문항</div><div class="part-name">${k}</div><div class="part-desc">${pt.desc}</div>`;
+    el.onclick=()=>startGame(pt.items,k);
+    grid.appendChild(el);
+  });
+  if(customWords.length>0){
+    const el=document.createElement('div');
+    el.className='part-card custom';
+    el.innerHTML=`<div class="part-card-cnt">${customWords.length}문항</div><div class="part-name">✏ 직접 추가 단어</div><div class="part-desc">내가 추가한 단어 모음</div>`;
+    el.onclick=()=>playCustom();
+    grid.appendChild(el);
+  }
+  showScreen('s-part');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  게임 시작 / 로드
+// ══════════════════════════════════════════════════════════════════
+function startGame(items,label){
+  const d=DB[exam||'jcs'];
+  partKey=label;words=[...items].sort(()=>Math.random()-.5);
+  idx=0;typed='';combo=0;bestCombo=0;totalWords=0;totalChars=0;totalErrors=0;
+  sessionWrong=[];startTime=null;clearInterval(wpmTimer);
+  const badge=document.getElementById('g-badge');
+  badge.textContent=d.badge;
+  const isJcs=exam==='jcs';
+  badge.style.cssText=`background:${isJcs?'var(--indigo-t)':'var(--green-t)'};color:${isJcs?'var(--indigo)':'var(--green)'};border:1px solid ${isJcs?'var(--indigo)':'var(--green)'}`;
+  document.getElementById('g-pname').textContent=label;
+  document.getElementById('g-prog').style.background=d.prog;
+  document.getElementById('wc-lbl').textContent=exam==='toeic'?'MEANING':'DEFINITION';
+  showScreen('s-game');
+  loadWord();
+  setTimeout(()=>document.getElementById('g-input').focus(),80);
+}
+
+function buildDots(){
+  document.getElementById('dot-row').innerHTML=words.map((_,i)=>{
+    let c='dot';if(i<idx)c+=' done';else if(i===idx)c+=' cur';
+    return `<div class="${c}"></div>`;
+  }).join('');
+}
+
+function loadWord(){
+  if(idx>=words.length){endGame();return;}
+  const item=words[idx];
+  const ko=isKorean(item.w);
+  document.getElementById('wc-mean').textContent=item.m;
+  document.getElementById('wc-ctx').textContent=item.c?'→ '+item.c:'';
+  document.getElementById('h-len').textContent=item.w.length+'글자';
+  document.getElementById('h-first').textContent='첫 글자: '+item.w[0];
+  document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
+  document.getElementById('g-cnt').textContent=idx+' / '+words.length;
+  // 언어 배지 업데이트
+  const badge=document.getElementById('lang-badge');
+  if(ko){badge.textContent='KO';badge.className='lang-badge ko';}
+  else{badge.textContent='EN';badge.className='lang-badge en';}
+  // 입력창 placeholder 업데이트
+  document.getElementById('g-input').placeholder=ko?'한글로 타이핑...':'Type here...';
+  buildDots();typed='';renderWord();
+  document.getElementById('g-input').value='';
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  렌더 / 판정
+// ══════════════════════════════════════════════════════════════════
+function renderWord(){
+  const w=words[idx]?.w||'';
+  const ko=isKorean(w);
+  let html='';
+
+  if(ko){
+    // 한글: 글자 단위 렌더. 조합 중인 마지막 글자는 항상 typed 색으로 처리
+    for(let i=0;i<w.length;i++){
+      if(i<typed.length){
+        const correct=typed[i]===w[i];
+        html+=`<span class="${correct?'tw-done':'tw-err'}">${w[i]}</span>`;
+      } else if(i===typed.length){
+        html+=`<span class="caret"></span><span class="tw-cur">${w[i]}</span>`;
+      } else {
+        html+=`<span class="tw-cur">${w[i]}</span>`;
+      }
+    }
+    // typed가 w보다 길면 caret은 끝에
+    if(typed.length>=w.length)html+=`<span class="caret"></span>`;
+  } else {
+    // 영어: 기존 로직
+    for(let i=0;i<typed.length;i++)
+      html+=`<span class="${typed[i]?.toLowerCase()===w[i]?.toLowerCase()?'tw-done':'tw-err'}">${w[i]||''}</span>`;
+    html+=`<span class="caret"></span>`;
+    for(let i=typed.length;i<w.length;i++)
+      html+=`<span class="tw-cur">${w[i]}</span>`;
+  }
+  document.getElementById('tw').innerHTML=html;
+}
+
+function processInput(val){
+  if(idx>=words.length)return;
+  const w=words[idx].w;
+  typed=val;
+
+  if(wordsMatch(val,w)){
+    // ✓ 정답
+    if(!startTime){startTime=Date.now();wpmTimer=setInterval(updateStats,2000);}
+    totalWords++;totalChars+=w.length;combo++;bestCombo=Math.max(bestCombo,combo);
+    document.getElementById('g-combo').textContent=combo;
+    const chip=document.getElementById('h-combo');
+    if(combo>=3){chip.style.display='inline';chip.textContent='🔥 '+combo+' COMBO!';}
+    else chip.style.display='none';
+    showPop(combo>=5?'🔥 +'+combo:'✓','var(--success)');
+    document.getElementById('g-input').value='';
+    typed='';idx++;
+    document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
+    document.getElementById('g-cnt').textContent=idx+' / '+words.length;
+    loadWord();
+  } else if(!isValidPrefix(val,w)){
+    // ✗ 오타 (접두사 불일치)
+    totalErrors++;combo=0;
+    document.getElementById('g-combo').textContent='0';
+    document.getElementById('h-combo').style.display='none';
+    const tw=document.getElementById('tw');
+    tw.classList.add('shake');setTimeout(()=>tw.classList.remove('shake'),200);
+    // 마지막 글자 제거
+    const newVal=val.slice(0,-1);
+    document.getElementById('g-input').value=newVal;
+    typed=newVal;
+    renderWord();
+  } else {
+    // 진행 중 (올바른 접두사)
+    renderWord();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  입력 이벤트: 한글 IME 조합 처리
+//  compositionstart/end 을 활용해 조합 중에는 판정을 보류하고
+//  compositionend 에서 최종 판정한다
+// ══════════════════════════════════════════════════════════════════
+const gInput=document.getElementById('g-input');
+
+gInput.addEventListener('compositionstart',()=>{
+  isComposing=true;
+});
+
+gInput.addEventListener('compositionend',function(){
+  isComposing=false;
+  // 조합이 끝난 직후 최종값으로 판정
+  processInput(this.value);
+});
+
+gInput.addEventListener('input',function(){
+  // 한글 조합 중에는 글자 단위 렌더만 하고 정답 판정은 하지 않는다
+  if(isComposing){
+    typed=this.value;
+    renderWord();
+    return;
+  }
+  processInput(this.value);
+});
+
+// ══════════════════════════════════════════════════════════════════
+//  통계 업데이트
+// ══════════════════════════════════════════════════════════════════
+function updateStats(){
+  if(!startTime||totalChars===0)return;
+  const m=(Date.now()-startTime)/60000;
+  document.getElementById('g-wpm').textContent=Math.round((totalChars/5)/m);
+  const acc=(totalChars+totalErrors)>0?Math.round(totalChars/(totalChars+totalErrors)*100):100;
+  document.getElementById('g-acc').textContent=acc+'%';
+}
+
+function showPop(text,color){
+  const a=document.getElementById('type-area');
+  const el=document.createElement('div');el.className='pop';
+  el.textContent=text;el.style.color=color||'var(--success)';
+  el.style.left=(20+Math.random()*60)+'%';el.style.top='10%';
+  a.appendChild(el);setTimeout(()=>el.remove(),700);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  SKIP / 나가기 / 게임 종료
+// ══════════════════════════════════════════════════════════════════
+function skip(){
+  if(idx>=words.length)return;
+  sessionWrong.push({...words[idx],exam:exam,examLabel:DB[exam]?.badge||'커스텀'});
+  combo=0;document.getElementById('g-combo').textContent='0';
+  document.getElementById('h-combo').style.display='none';
+  idx++;document.getElementById('g-input').value='';typed='';loadWord();
+}
+
+/** 게임 중 나가기 — 지금까지의 결과를 보여줌 */
+function exitGame(){
+  if(!confirm('게임을 중단하고 지금까지의 결과를 볼까요?'))return;
+  endGame();
+}
+
+function endGame(){
+  clearInterval(wpmTimer);
+  const mins=startTime?(Date.now()-startTime)/60000:1;
+  const wpm=Math.round((totalChars/5)/Math.max(0.01,mins));
+  const acc=(totalChars+totalErrors)>0?Math.round(totalChars/(totalChars+totalErrors)*100):100;
+  document.getElementById('res-icon').textContent=acc>=90?'🎉':acc>=70?'👍':'💪';
+  document.getElementById('res-sub').textContent=partKey+' — SESSION COMPLETE';
+  document.getElementById('r-wpm').textContent=wpm;
+  document.getElementById('r-acc').textContent=acc+'%';
+  document.getElementById('r-words').textContent=totalWords;
+  document.getElementById('r-combo').textContent=bestCombo;
+  document.querySelectorAll('.res-val').forEach(el=>el.style.color=DB[exam]?.prog||'var(--indigo)');
+  const rw=document.getElementById('res-wrong'),rl=document.getElementById('rw-list');
+  rl.innerHTML='';
+  if(sessionWrong.length>0){
+    rw.style.display='block';
+    sessionWrong.forEach(w=>{
+      const d=document.createElement('div');d.className='rw-item';
+      d.innerHTML=`<span class="rw-word">${w.w}</span><span class="rw-mean">${w.m.slice(0,40)}…</span>`;
+      rl.appendChild(d);
+    });
+  }else rw.style.display='none';
+  showScreen('s-result');
+}
+
+function retry(){if(partKey&&words.length>0)startGame(words.map(w=>({...w})),partKey);}
+
+// ══════════════════════════════════════════════════════════════════
+//  오답노트
+// ══════════════════════════════════════════════════════════════════
+function saveWrong(){
+  if(sessionWrong.length===0){toast('저장할 오답이 없어요 🎉');return;}
+  let added=0;
+  sessionWrong.forEach(item=>{
+    const exists=wrongNote.find(n=>n.w===item.w);
+    if(exists)exists.cnt=(exists.cnt||1)+1;
+    else{wrongNote.push({...item,cnt:1,savedAt:Date.now()});added++;}
+  });
+  save();toast(`오답노트에 ${added}개 추가됐어요!`);
+}
+
+function renderWrong(){
+  const cnt=wrongNote.length;
+  document.getElementById('wrong-cnt').textContent=cnt+'개';
+  const empty=document.getElementById('wrong-empty');
+  const list=document.getElementById('wrong-list');
+  const actions=document.getElementById('wrong-actions');
+  if(cnt===0){empty.style.display='flex';list.style.display='none';actions.style.display='none';return;}
+  empty.style.display='none';list.style.display='flex';actions.style.display='flex';
+  list.innerHTML=wrongNote.map((item,i)=>{
+    const isJcs=item.exam!=='toeic';
+    return `<div class="note-item">
+      <div class="note-word">${item.w}</div>
+      <div class="note-info">
+        <div class="note-mean">${item.m}</div>
+        <div class="note-meta">
+          <span class="note-exam" style="background:${isJcs?'var(--indigo-t)':'var(--green-t)'};color:${isJcs?'var(--indigo)':'var(--green)'}">${item.examLabel||'?'}</span>
+          ${(item.cnt||1)>1?`<span class="note-cnt">⚠ ${item.cnt}회 틀림</span>`:''}
+        </div>
+      </div>
+      <button class="note-del" onclick="delWrong(${i})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function delWrong(i){wrongNote.splice(i,1);save();renderWrong();}
+function clearWrong(){if(confirm('오답 노트를 전부 삭제할까요?')){wrongNote=[];save();renderWrong();}}
+function playWrong(){
+  if(wrongNote.length===0){toast('오답 노트가 비어있어요');return;}
+  exam=wrongNote[0].exam||'jcs';
+  startGame(wrongNote.map(n=>({w:n.w,m:n.m,c:n.c||''})),'오답 노트 복습');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  직접 추가
+// ══════════════════════════════════════════════════════════════════
+function addCustom(){
+  const word=document.getElementById('f-word').value.trim();
+  const mean=document.getElementById('f-mean').value.trim();
+  const ctx=document.getElementById('f-ctx').value.trim();
+  const cat=document.getElementById('f-cat').value.trim()||'내 단어장';
+  if(!word||!mean){toast('단어와 뜻은 필수예요!');return;}
+  if(customWords.find(c=>c.w===word)){toast('이미 추가된 단어예요');return;}
+  customWords.push({w:word,m:mean,c:ctx,cat,addedAt:Date.now()});
+  save();
+  ['f-word','f-mean','f-ctx','f-cat'].forEach(id=>document.getElementById(id).value='');
+  renderCustom();toast('단어가 추가됐어요!');
+}
+
+function renderCustom(){
+  const list=document.getElementById('custom-list');
+  const empty=document.getElementById('custom-empty');
+  const playBtn=document.getElementById('play-custom-btn');
+  if(customWords.length===0){list.style.display='none';empty.style.display='block';playBtn.disabled=true;return;}
+  list.style.display='flex';empty.style.display='none';playBtn.disabled=false;
+  list.innerHTML=customWords.map((item,i)=>`
+    <div class="custom-item">
+      <div class="ci-word">${item.w}</div>
+      <div class="ci-info">
+        <div class="ci-mean">${item.m}</div>
+        ${item.c?`<div class="ci-ctx">${item.c}</div>`:''}
+        ${item.cat?`<span class="ci-cat">#${item.cat}</span>`:''}
+      </div>
+      <button class="ci-del" onclick="delCustom(${i})">✕</button>
+    </div>`).join('');
+}
+
+function delCustom(i){customWords.splice(i,1);save();renderCustom();}
+function playCustom(){
+  if(customWords.length===0){toast('추가된 단어가 없어요');return;}
+  exam=exam||'jcs';
+  startGame(customWords.map(c=>({w:c.w,m:c.m,c:c.c||''})),'직접 추가 단어');
+}
+
+document.getElementById('f-word').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('f-mean').focus();});
+renderCustom();
+</script>
