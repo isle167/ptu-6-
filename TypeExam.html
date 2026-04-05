@@ -217,9 +217,20 @@
 
 <!-- ═══════════════════════════ 홈 ═══════════════════════════ -->
 <div id="s-home" class="screen active">
+  
+  <div class="nav-bar" style="position:absolute; top:0; left:0; width:100%; box-sizing:border-box;">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="goHome()">홈</button>
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">직접추가</button>
+    </div>
+  </div>
+
   <div class="home-eyebrow">EXAM TYPING TRAINER v4.0</div>
   <div class="home-title">Type<em>Exam</em></div>
   <div class="home-sub">정처기 실기 · 토익 — 파트별 타이핑 훈련</div>
+
   <div class="exam-grid">
     <div class="exam-card" style="--ca:var(--indigo);--ct:var(--indigo-t)" id="card-jcs" onclick="selExam('jcs')">
       <div class="card-icon">💻</div>
@@ -305,6 +316,17 @@
 
 <!-- ═══════════════════════════ 결과 ═══════════════════════════ -->
 <div id="s-result" class="screen" style="align-items:center;justify-content:center">
+
+  <div class="nav-bar" style="position:absolute; top:0; left:0; width:100%; box-sizing:border-box;">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button class="nav-tab" onclick="goHome()">홈</button>
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">직접추가</button>
+    </div>
+  </div>
+  <div class="res-icon" id="res-icon">🎉</div>
+  <div class="res-title">Result</div>
   <div class="res-icon" id="res-icon">🎉</div>
   <div class="res-title">Result</div>
   <div class="res-sub" id="res-sub">SESSION COMPLETE</div>
@@ -337,18 +359,21 @@
   </div>
   <div class="page-body">
     <div class="page-header">
-      <div class="page-title">오답 노트</div>
+      <div class="page-title" id="wrong-main-title">오답 노트</div>
       <div class="page-cnt" id="wrong-cnt">0개</div>
     </div>
-    <div id="wrong-empty" class="empty-state">
-      <div class="empty-icon">📋</div>
-      <div class="empty-text">아직 저장된 오답이 없어요</div>
-      <div class="empty-sub">게임 종료 후 '오답노트 저장'을 누르면 여기에 쌓여요</div>
+
+    <div id="wrong-part-view" style="display:none; width:100%;">
+       <div class="part-grid" id="wrong-part-grid"></div>
     </div>
-    <div id="wrong-list" class="note-list" style="display:none"></div>
-    <div id="wrong-actions" style="display:none" class="note-actions">
-      <button class="btn-amber" onclick="playWrong()" style="flex:1">오답만 다시 풀기 →</button>
-      <button class="btn-gray" onclick="clearWrong()">전체 삭제</button>
+
+    <div id="wrong-word-view" style="display:none; width:100%; flex-direction:column; flex:1;">
+       <div class="back-row" style="margin-bottom:16px;">
+         <button class="back-btn" onclick="showWrongParts()">← 파트 목록으로</button>
+         <div class="back-title" id="wrong-sub-title">상세 단어</div>
+       </div>
+       <div id="wrong-list" class="note-list" style="flex:1;"></div>
+       <div id="wrong-actions" class="note-actions"></div>
     </div>
   </div>
 </div>
@@ -657,101 +682,87 @@ function buildDots(){
     return `<div class="${c}"></div>`;
   }).join('');
 }
-
+// ══════════════════════════════════════════════════════════════════
+// 렌더 (스펠링 힌트 숨김 & 색상 통일)
+// ══════════════════════════════════════════════════════════════════
 function loadWord(){
   if(idx>=words.length){endGame();return;}
   const item=words[idx];
   const ko=isKorean(item.w);
   document.getElementById('wc-mean').textContent=item.m;
   document.getElementById('wc-ctx').textContent=item.c?'→ '+item.c:'';
+  
+  // 첫 글자 힌트 제거, 글자 수만 표시
   document.getElementById('h-len').textContent=item.w.length+'글자';
-  document.getElementById('h-first').textContent='첫 글자: '+item.w[0];
+  document.getElementById('h-first').style.display='none'; 
+  
   document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
   document.getElementById('g-cnt').textContent=idx+' / '+words.length;
-  // 언어 배지 업데이트
+  
   const badge=document.getElementById('lang-badge');
   if(ko){badge.textContent='KO';badge.className='lang-badge ko';}
   else{badge.textContent='EN';badge.className='lang-badge en';}
-  // 입력창 placeholder 업데이트
-  document.getElementById('g-input').placeholder=ko?'한글로 타이핑...':'Type here...';
-  buildDots();typed='';renderWord();
+  
+  document.getElementById('g-input').placeholder=ko?'한글로 타이핑 후 엔터...':'Type then press Enter...';
+  
+  buildDots();
+  typed='';
+  renderWord();
   document.getElementById('g-input').value='';
 }
 
-// ══════════════════════════════════════════════════════════════════
-//  렌더 / 판정
-// ══════════════════════════════════════════════════════════════════
 function renderWord(){
-  const w=words[idx]?.w||'';
-  const ko=isKorean(w);
+  // 정답, 오답 색상 구분이나 배경 스펠링 없이 오직 '입력한 글자'만 기본 색상으로 렌더링
   let html='';
-
-  if(ko){
-    // 한글: 글자 단위 렌더. 조합 중인 마지막 글자는 항상 typed 색으로 처리
-    for(let i=0;i<w.length;i++){
-      if(i<typed.length){
-        const correct=typed[i]===w[i];
-        html+=`<span class="${correct?'tw-done':'tw-err'}">${w[i]}</span>`;
-      } else if(i===typed.length){
-        html+=`<span class="caret"></span><span class="tw-cur">${w[i]}</span>`;
-      } else {
-        html+=`<span class="tw-cur">${w[i]}</span>`;
-      }
-    }
-    // typed가 w보다 길면 caret은 끝에
-    if(typed.length>=w.length)html+=`<span class="caret"></span>`;
-  } else {
-    // 영어: 기존 로직
-    for(let i=0;i<typed.length;i++)
-      html+=`<span class="${typed[i]?.toLowerCase()===w[i]?.toLowerCase()?'tw-done':'tw-err'}">${w[i]||''}</span>`;
-    html+=`<span class="caret"></span>`;
-    for(let i=typed.length;i<w.length;i++)
-      html+=`<span class="tw-cur">${w[i]}</span>`;
+  for(let i=0; i<typed.length; i++){
+    html+=`<span style="color: var(--text);">${typed[i]}</span>`;
   }
+  html+=`<span class="caret"></span>`;
   document.getElementById('tw').innerHTML=html;
 }
 
-function processInput(val){
+// ══════════════════════════════════════════════════════════════════
+// 판정 및 엔터키 제출 로직
+// ══════════════════════════════════════════════════════════════════
+function submitAnswer(val){
   if(idx>=words.length)return;
   const w=words[idx].w;
-  typed=val;
 
-  if(wordsMatch(val,w)){
-    // ✓ 정답
-    if(!startTime){startTime=Date.now();wpmTimer=setInterval(updateStats,2000);}
+  if(!startTime){startTime=Date.now();wpmTimer=setInterval(updateStats,2000);}
+
+  // 영어일 경우 대소문자 무시하고 띄어쓰기 공백 제거 후 채점
+  if(wordsMatch(val.trim(), w)){
+    // ✓ 정답일 경우
     totalWords++;totalChars+=w.length;combo++;bestCombo=Math.max(bestCombo,combo);
     document.getElementById('g-combo').textContent=combo;
     const chip=document.getElementById('h-combo');
     if(combo>=3){chip.style.display='inline';chip.textContent='🔥 '+combo+' COMBO!';}
     else chip.style.display='none';
     showPop(combo>=5?'🔥 +'+combo:'✓','var(--success)');
-    document.getElementById('g-input').value='';
-    typed='';idx++;
-    document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
-    document.getElementById('g-cnt').textContent=idx+' / '+words.length;
-    loadWord();
-  } else if(!isValidPrefix(val,w)){
-    // ✗ 오타 (접두사 불일치)
+  } else {
+    // ✗ 오답일 경우 (넘어가면서 오답노트에 추가)
     totalErrors++;combo=0;
     document.getElementById('g-combo').textContent='0';
     document.getElementById('h-combo').style.display='none';
+    showPop('✗','var(--error)');
     const tw=document.getElementById('tw');
     tw.classList.add('shake');setTimeout(()=>tw.classList.remove('shake'),200);
-    // 마지막 글자 제거
-    const newVal=val.slice(0,-1);
-    document.getElementById('g-input').value=newVal;
-    typed=newVal;
-    renderWord();
-  } else {
-    // 진행 중 (올바른 접두사)
-    renderWord();
+    
+    // 오답노트에 현재 단어 저장
+    sessionWrong.push({...words[idx],exam:exam,examLabel:DB[exam]?.badge||'커스텀'});
   }
+
+  // 정답이든 오답이든 다음 문제로 이동
+  document.getElementById('g-input').value='';
+  typed='';
+  idx++;
+  document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
+  document.getElementById('g-cnt').textContent=idx+' / '+words.length;
+  loadWord();
 }
 
 // ══════════════════════════════════════════════════════════════════
-//  입력 이벤트: 한글 IME 조합 처리
-//  compositionstart/end 을 활용해 조합 중에는 판정을 보류하고
-//  compositionend 에서 최종 판정한다
+// 입력 이벤트 (한글 조합 및 엔터키 감지)
 // ══════════════════════════════════════════════════════════════════
 const gInput=document.getElementById('g-input');
 
@@ -761,18 +772,22 @@ gInput.addEventListener('compositionstart',()=>{
 
 gInput.addEventListener('compositionend',function(){
   isComposing=false;
-  // 조합이 끝난 직후 최종값으로 판정
-  processInput(this.value);
+  typed=this.value;
+  renderWord(); // 한글 조합 완료 시 렌더링만 업데이트
 });
 
 gInput.addEventListener('input',function(){
-  // 한글 조합 중에는 글자 단위 렌더만 하고 정답 판정은 하지 않는다
-  if(isComposing){
-    typed=this.value;
-    renderWord();
-    return;
+  typed=this.value;
+  renderWord(); // 입력할 때마다 렌더링만 업데이트 (판정 안 함)
+});
+
+// 엔터키를 눌렀을 때만 판정(submitAnswer) 실행
+gInput.addEventListener('keydown', function(e) {
+  if(e.key === 'Enter') {
+    // 한글 IME 조합 중복 엔터 방지
+    if(e.isComposing || isComposing) return;
+    submitAnswer(this.value);
   }
-  processInput(this.value);
 });
 
 // ══════════════════════════════════════════════════════════════════
@@ -852,36 +867,116 @@ function saveWrong(){
   save();toast(`오답노트에 ${added}개 추가됐어요!`);
 }
 
+// 오답노트 화면 렌더링 (처음 들어가면 파트 목록을 보여줌)
 function renderWrong(){
-  const cnt=wrongNote.length;
-  document.getElementById('wrong-cnt').textContent=cnt+'개';
-  const empty=document.getElementById('wrong-empty');
-  const list=document.getElementById('wrong-list');
-  const actions=document.getElementById('wrong-actions');
-  if(cnt===0){empty.style.display='flex';list.style.display='none';actions.style.display='none';return;}
-  empty.style.display='none';list.style.display='flex';actions.style.display='flex';
-  list.innerHTML=wrongNote.map((item,i)=>{
-    const isJcs=item.exam!=='toeic';
+  showWrongParts();
+}
+
+// 💡 파트(카테고리) 목록 보여주기
+function showWrongParts() {
+  const cnt = wrongNote.length;
+  document.getElementById('wrong-main-title').textContent = '오답 노트 (파트 선택)';
+  document.getElementById('wrong-cnt').textContent = '총 ' + cnt + '개';
+
+  const partView = document.getElementById('wrong-part-view');
+  const wordView = document.getElementById('wrong-word-view');
+  const partGrid = document.getElementById('wrong-part-grid');
+
+  partView.style.display = 'block';
+  wordView.style.display = 'none';
+
+  if(cnt === 0) {
+    partGrid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1; padding-top:40px;">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">아직 저장된 오답이 없어요</div>
+      </div>`;
+    return;
+  }
+
+  // 저장된 오답들을 파트별(정처기, TOEIC 등)로 분류
+  const groups = {};
+  wrongNote.forEach(item => {
+    const label = item.examLabel || '기타';
+    if(!groups[label]) groups[label] = [];
+    groups[label].push(item);
+  });
+
+  // 분류된 파트별로 네모난 카드 생성
+  partGrid.innerHTML = Object.keys(groups).map(label => {
+    const items = groups[label];
+    const isJcs = items[0].exam !== 'toeic' && label !== '커스텀';
+    const color = isJcs ? 'var(--indigo)' : (label==='커스텀' ? 'var(--amber)' : 'var(--green)');
+    const bgColor = isJcs ? 'var(--indigo-t)' : (label==='커스텀' ? 'var(--amber-t)' : 'var(--green-t)');
+
+    return `<div class="part-card" style="border-color:${color}; background:${bgColor}" onclick="showWrongWords('${label}')">
+      <div class="part-card-cnt" style="background:white; color:${color}">${items.length}단어</div>
+      <div class="part-name" style="color:${color}">${label}</div>
+      <div class="part-desc">클릭하여 오답 확인 및 복습</div>
+    </div>`;
+  }).join('');
+}
+
+// 💡 특정 파트를 눌렀을 때 해당 단어들만 보여주기
+function showWrongWords(label) {
+  const filteredNotes = wrongNote.filter(n => (n.examLabel || '기타') === label);
+
+  document.getElementById('wrong-main-title').textContent = '오답 노트';
+  document.getElementById('wrong-cnt').textContent = label + ' (' + filteredNotes.length + '개)';
+  document.getElementById('wrong-sub-title').textContent = label;
+
+  document.getElementById('wrong-part-view').style.display = 'none';
+  document.getElementById('wrong-word-view').style.display = 'flex';
+
+  const list = document.getElementById('wrong-list');
+  const actions = document.getElementById('wrong-actions');
+
+  list.innerHTML = filteredNotes.map((item) => {
+    const originalIndex = wrongNote.findIndex(n => n.w === item.w); // 원본 배열에서의 번호 찾기
     return `<div class="note-item">
       <div class="note-word">${item.w}</div>
       <div class="note-info">
         <div class="note-mean">${item.m}</div>
         <div class="note-meta">
-          <span class="note-exam" style="background:${isJcs?'var(--indigo-t)':'var(--green-t)'};color:${isJcs?'var(--indigo)':'var(--green)'}">${item.examLabel||'?'}</span>
-          ${(item.cnt||1)>1?`<span class="note-cnt">⚠ ${item.cnt}회 틀림</span>`:''}
+          ${(item.cnt||1)>1 ? `<span class="note-cnt">⚠ ${item.cnt}회 틀림</span>` : ''}
         </div>
       </div>
-      <button class="note-del" onclick="delWrong(${i})">✕</button>
+      <button class="note-del" onclick="delWrong(${originalIndex}, '${label}')">✕</button>
     </div>`;
   }).join('');
+
+  // 해당 파트만 삭제하거나 복습할 수 있는 버튼 추가
+  actions.innerHTML = `
+    <button class="btn-amber" onclick="playWrongPart('${label}')" style="flex:1">이 파트 오답만 다시 풀기 →</button>
+    <button class="btn-gray" onclick="clearWrongPart('${label}')">이 파트 비우기</button>
+  `;
 }
 
-function delWrong(i){wrongNote.splice(i,1);save();renderWrong();}
-function clearWrong(){if(confirm('오답 노트를 전부 삭제할까요?')){wrongNote=[];save();renderWrong();}}
-function playWrong(){
-  if(wrongNote.length===0){toast('오답 노트가 비어있어요');return;}
-  exam=wrongNote[0].exam||'jcs';
-  startGame(wrongNote.map(n=>({w:n.w,m:n.m,c:n.c||''})),'오답 노트 복습');
+// 단어 개별 삭제
+function delWrong(i, currentLabel){
+  wrongNote.splice(i,1);
+  save();
+  // 삭제 후 그 파트에 단어가 남아있으면 화면 갱신, 다 지워졌으면 파트 목록으로 돌아감
+  const remaining = wrongNote.filter(n => (n.examLabel || '기타') === currentLabel);
+  if(remaining.length === 0) showWrongParts();
+  else showWrongWords(currentLabel);
+}
+
+// 파트 전체 삭제
+function clearWrongPart(label){
+  if(confirm(`'${label}' 파트의 오답 노트를 전부 삭제할까요?`)){
+    wrongNote = wrongNote.filter(n => (n.examLabel || '기타') !== label);
+    save();
+    showWrongParts();
+  }
+}
+
+// 특정 파트만 오답 복습 게임 시작
+function playWrongPart(label){
+  const filteredNotes = wrongNote.filter(n => (n.examLabel || '기타') === label);
+  if(filteredNotes.length === 0) return;
+  exam = filteredNotes[0].exam || 'jcs';
+  startGame(filteredNotes.map(n=>({w:n.w, m:n.m, c:n.c||''})), `${label} 오답 복습`);
 }
 
 // ══════════════════════════════════════════════════════════════════
