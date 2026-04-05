@@ -1,3 +1,9 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TypeExam</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -231,13 +237,15 @@
 .mask-word .note-word.revealed { background-color: transparent; color: var(--text); }
 .mask-mean .note-mean.revealed { background-color: transparent; color: var(--muted); }
 </style>
-
+</head>
+<body>
 <div id="root">
 
 <div id="s-home" class="screen active">
   <div class="nav-bar" style="position:absolute; top:0; left:0; width:100%; box-sizing:border-box;">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
       <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
       <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
     </div>
@@ -268,6 +276,7 @@
   <div class="nav-bar">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
       <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
       <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
     </div>
@@ -329,6 +338,7 @@
   <div class="nav-bar" style="position:absolute; top:0; left:0; width:100%; box-sizing:border-box;">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
       <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
       <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
     </div>
@@ -367,7 +377,7 @@
       <div class="page-cnt" id="wrong-cnt">0개</div>
     </div>
 
-    <div id="wrong-part-view" style="display:none; width:100%;">
+    <div id="wrong-part-view" style="display:block; width:100%;">
        <div class="part-grid" id="wrong-part-grid"></div>
     </div>
 
@@ -376,9 +386,7 @@
          <button class="back-btn" onclick="showWrongParts()">← 파트 목록으로</button>
          <div class="back-title" id="wrong-sub-title">상세 단어</div>
        </div>
-       
        <div id="wrong-list-count" style="font-size: 12px; color: var(--muted); margin-bottom: 6px; font-family: var(--f-mono); text-align: right;">0개</div>
-       
        <div id="wrong-list" class="note-list" style="flex:1;"></div>
        <div id="wrong-actions" class="note-actions"></div>
     </div>
@@ -389,6 +397,7 @@
   <div class="nav-bar">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
       <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
       <button class="nav-tab active" onclick="showScreen('s-custom')">문제추가</button>
     </div>
@@ -424,7 +433,8 @@
   </div>
 </div>
 
-</div><script>
+</div>
+<script>
 // ══════════════════════════════════════════════════════════════════
 //  데이터베이스
 // ══════════════════════════════════════════════════════════════════
@@ -438,7 +448,7 @@ const DB={
         {w:'deadlock',m:'두 트랜잭션이 서로의 자원을 기다리며 무한 대기하는 상태',c:'예방, 회피, 탐지, 복구 4가지 방법으로 해결한다'},
         {w:'trigger',m:'특정 이벤트 발생 시 자동으로 실행되는 프로시저',c:'INSERT, UPDATE, DELETE 이벤트에 연결하여 사용한다'},
         {w:'view',m:'하나 이상의 테이블을 기반으로 만든 가상 테이블',c:'데이터 보안과 복잡한 쿼리 단순화에 활용된다'},
-        {w:'rollback',m:'트랜잭션 오류 발생 시 이전 상태로 되돌리는 연산',c:'COMMIT 이전 상태로 DB를 복원한다'},
+        {w:'rollback',m:'트랜잭션 오류 발생 시 이전 상태로 되돌리는 연산',c:'COMMIT 이전 상태로 DB 복원한다'},
         {w:'schema',m:'데이터베이스 구조와 제약조건을 정의한 메타데이터',c:'외부, 개념, 내부 스키마 3단계로 나눈다'},
         {w:'join',m:'둘 이상의 테이블을 연결하여 데이터를 조회하는 연산',c:'INNER, LEFT, RIGHT, FULL OUTER JOIN이 있다'},
         {w:'subquery',m:'다른 쿼리 내부에 포함된 SELECT 문',c:'스칼라, 인라인 뷰, 중첩 서브쿼리로 구분된다'},
@@ -559,6 +569,31 @@ const DB={
   }
 };
 
+// 🔊 사운드 시스템 설정 
+const sfx = {
+  isMuted: false,
+  button: new Audio('button_snd.mp3'),
+  keyboard: new Audio('keyboard_snd.mp3'),
+  page: new Audio('page.mp3'),
+  over_bad: new Audio('game_over_q.mp3'),
+  over_perfect: new Audio('game_over_b.mp3')
+};
+
+// 소리 재생 공통 함수
+function playSound(audio) {
+  if (sfx.isMuted) return;
+  audio.currentTime = 0; // 연타 시 끊김 방지
+  audio.play().catch(e => console.log("재생 차단:", e));
+}
+
+// 음소거 토글 함수
+function toggleMute() {
+  sfx.isMuted = !sfx.isMuted;
+  const btn = document.getElementById('mute-btn');
+  if(btn) btn.textContent = sfx.isMuted ? '🔇 음소거' : '🔊 소리 켜짐';
+  toast(sfx.isMuted ? '음소거 되었습니다' : '소리가 켜졌습니다');
+}
+
 // ══════════════════════════════════════════════════════════════════
 //  상태 변수
 // ══════════════════════════════════════════════════════════════════
@@ -598,7 +633,6 @@ function showScreen(id, pushHistory = true){
   if(id==='s-wrong') renderWrong();
   if(id==='s-custom') renderCustom();
 
-  // 브라우저 주소창에 가짜 기록(#id)을 남겨서 뒤로가기 버튼 활성화
   if(pushHistory) {
     history.pushState({ screenId: id }, '', '#' + id);
   }
@@ -607,10 +641,8 @@ function showScreen(id, pushHistory = true){
 // 💡 브라우저 뒤로가기 버튼을 눌렀을 때 감지하는 코드
 window.addEventListener('popstate', function(event) {
   if(event.state && event.state.screenId) {
-    // 사용자가 뒤로가기를 누르면, 기록해둔 이전 화면을 띄워줌 (히스토리 추가 안 함)
     showScreen(event.state.screenId, false);
   } else {
-    // 더 이상 돌아갈 기록이 없으면 홈 화면으로
     showScreen('s-home', false);
   }
 });
@@ -664,14 +696,14 @@ function gopart(){
     const el=document.createElement('div');
     el.className='part-card';
     el.innerHTML=`<div class="part-card-cnt">${pt.items.length}문항</div><div class="part-name">${k}</div><div class="part-desc">${pt.desc}</div>`;
-    el.onclick=()=>startGame(pt.items,k);
+    el.onclick=()=>{ playSound(sfx.button); startGame(pt.items,k); }
     grid.appendChild(el);
   });
   if(customWords.length>0){
     const el=document.createElement('div');
     el.className='part-card custom';
     el.innerHTML=`<div class="part-card-cnt">${customWords.length}문항</div><div class="part-name">✏ 추가한 문제</div><div class="part-desc">내가 추가한 문제 모음</div>`;
-    el.onclick=()=>playCustom();
+    el.onclick=()=>{ playSound(sfx.button); playCustom(); }
     grid.appendChild(el);
   }
   showScreen('s-part');
@@ -746,8 +778,10 @@ function renderWord(){
 // ══════════════════════════════════════════════════════════════════
 function submitAnswer(val){
   if(idx>=words.length)return;
-  const w=words[idx].w;
+  
+  playSound(sfx.page); // 🔊 엔터 치면 무조건 페이지 소리 재생
 
+  const w=words[idx].w;
   if(!startTime){startTime=Date.now();wpmTimer=setInterval(updateStats,2000);}
 
   if(wordsMatch(val.trim(), w)){
@@ -782,6 +816,7 @@ gInput.addEventListener('compositionend',function(){
 });
 gInput.addEventListener('input',function(){
   typed=this.value; renderWord(); 
+  playSound(sfx.keyboard); // 🔊 타이핑 소리
 });
 gInput.addEventListener('keydown', function(e) {
   if(e.key === 'Enter') {
@@ -811,6 +846,7 @@ function showPop(text,color){
 
 function skip(){
   if(idx>=words.length)return;
+  playSound(sfx.button);
   sessionWrong.push({...words[idx],exam:exam,examLabel:DB[exam]?.badge||'커스텀'});
   combo=0;document.getElementById('g-combo').textContent='0';
   document.getElementById('h-combo').style.display='none';
@@ -828,6 +864,11 @@ function endGame(){
   const mins=startTime?(Date.now()-startTime)/60000:1;
   const wpm=Math.round((totalChars/5)/Math.max(0.01,mins));
   const acc=(totalChars+totalErrors)>0?Math.round(totalChars/(totalChars+totalErrors)*100):100;
+  
+  // 🔊 결과 소리 재생
+  if (acc === 100) playSound(sfx.over_perfect);
+  else if (acc <= 30) playSound(sfx.over_bad);
+
   document.getElementById('res-icon').textContent=acc>=90?'🎉':acc>=70?'👍':'💪';
   document.getElementById('res-sub').textContent=partKey+' — SESSION COMPLETE';
   document.getElementById('r-wpm').textContent=wpm;
@@ -848,9 +889,24 @@ function endGame(){
   showScreen('s-result');
 }
 
-function retry(){if(partKey&&words.length>0)startGame(words.map(w=>({...w})),partKey);}
+// 🚀 [복구] 완벽하게 동작하는 다시 풀기 기능
+function retry() {
+  if (typeof playSound === 'function') playSound(sfx.button);
+  
+  if (partKey === '추가한 문제') return playCustom();
+  if (partKey && partKey.includes('오답 복습')) return playWrongPart(partKey.replace(' 오답 복습', ''));
+  
+  const currentDB = DB[exam || 'jcs'];
+  if (partKey && currentDB && currentDB.parts[partKey]) {
+    startGame(currentDB.parts[partKey].items, partKey);
+  } else {
+    goHome();
+  }
+}
 
+// 💡 [유지] 질문자님이 좋아하셨던 카운트 증가 방식 오답 저장
 function saveWrong(){
+  if(typeof playSound === 'function') playSound(sfx.button);
   if(sessionWrong.length===0){toast('저장할 오답이 없어요 🎉');return;}
   let added=0;
   sessionWrong.forEach(item=>{
@@ -859,6 +915,7 @@ function saveWrong(){
     else{wrongNote.push({...item,cnt:1,savedAt:Date.now()});added++;}
   });
   save();toast(`오답노트에 ${added}개 추가됐어요!`);
+  sessionWrong=[]; // 💡 저장 후 비워주기 추가
 }
 
 function renderWrong(){
@@ -895,19 +952,24 @@ function showWrongParts() {
 
   partGrid.innerHTML = Object.keys(groups).map(label => {
     const items = groups[label];
-    const isJcs = items[0].exam !== 'toeic' && label !== '커스텀';
-    const color = isJcs ? 'var(--indigo)' : (label==='커스텀' ? 'var(--amber)' : 'var(--green)');
-    const bgColor = isJcs ? 'var(--indigo-t)' : (label==='커스텀' ? 'var(--amber-t)' : 'var(--green-t)');
+    
+    // 🚀 [복구] 이름에 정처기가 포함되어 있으면 파란색으로 표시
+    const isJcs = label.includes('정처기') || label.includes('정보처리');
+    
+    const color = isJcs ? 'var(--indigo)' : (label==='커스텀' || label==='추가한 문제' ? 'var(--amber)' : 'var(--green)');
+    const bgColor = isJcs ? 'var(--indigo-t)' : (label==='커스텀' || label==='추가한 문제' ? 'var(--amber-t)' : 'var(--green-t)');
 
     return `<div class="part-card" style="border-color:${color}; background:${bgColor}" onclick="showWrongWords('${label}')">
       <div class="part-card-cnt" style="background:white; color:${color}">${items.length}단어</div>
-      <div class="part-name" style="color:${color}">${label}</div>
+      <div class="part-name" style="color:${color}; font-weight:700; font-size:16px;">${label}</div>
       <div class="part-desc">클릭하여 오답 확인 및 복습</div>
     </div>`;
   }).join('');
 }
 
+// 💡 [유지] 질문자님이 만족하셨던 완벽한 디자인의 오답노트 상세 보기
 function showWrongWords(label) {
+  if(typeof playSound === 'function') playSound(sfx.button); // 🔊 사운드 추가
   const filteredNotes = wrongNote.filter(n => (n.examLabel || '기타') === label);
 
   document.getElementById('wrong-main-title').textContent = '오답 노트';
@@ -956,6 +1018,7 @@ function showWrongWords(label) {
 }
 
 function toggleMask(type) {
+  playSound(sfx.button);
   const list = document.getElementById('wrong-list');
   if (type === 'word') {
     isWordMasked = !isWordMasked;
@@ -969,6 +1032,7 @@ function toggleMask(type) {
 }
 
 function delWrong(i, currentLabel){
+  playSound(sfx.button);
   wrongNote.splice(i,1); save();
   const remaining = wrongNote.filter(n => (n.examLabel || '기타') === currentLabel);
   if(remaining.length === 0) showWrongParts();
@@ -976,6 +1040,7 @@ function delWrong(i, currentLabel){
 }
 
 function clearWrongPart(label){
+  playSound(sfx.button);
   if(confirm(`'${label}' 파트의 오답 노트를 전부 삭제할까요?`)){
     wrongNote = wrongNote.filter(n => (n.examLabel || '기타') !== label);
     save(); showWrongParts();
@@ -983,13 +1048,15 @@ function clearWrongPart(label){
 }
 
 function playWrongPart(label){
+  playSound(sfx.button);
   const filteredNotes = wrongNote.filter(n => (n.examLabel || '기타') === label);
   if(filteredNotes.length === 0) return;
-  exam = filteredNotes[0].exam || 'jcs';
+  exam = label.includes('TOEIC') ? 'toeic' : 'jcs';
   startGame(filteredNotes.map(n=>({w:n.w, m:n.m, c:n.c||''})), `${label} 오답 복습`);
 }
 
 function addCustom(){
+  playSound(sfx.button);
   const word=document.getElementById('f-word').value.trim();
   const mean=document.getElementById('f-mean').value.trim();
   const ctx=document.getElementById('f-ctx').value.trim();
@@ -1020,8 +1087,9 @@ function renderCustom(){
     </div>`).join('');
 }
 
-function delCustom(i){customWords.splice(i,1);save();renderCustom();}
+function delCustom(i){playSound(sfx.button); customWords.splice(i,1);save();renderCustom();}
 function playCustom(){
+  playSound(sfx.button);
   if(customWords.length===0){toast('추가된 문제가 없어요');return;}
   exam=exam||'jcs';
   startGame(customWords.map(c=>({w:c.w,m:c.m,c:c.c||''})),'추가한 문제');
@@ -1036,4 +1104,14 @@ document.getElementById('s-game').addEventListener('click', function() {
 
 renderCustom();
 selExam('jcs'); // 처음 시작할 때 정처기 기본 선택
+
+// 🔊 화면 어디든 클릭하면 'button_snd' 재생하기
+document.addEventListener('click', function(e) {
+  // 입력창(input, textarea)을 클릭할 때는 예외
+  if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+    playSound(sfx.button);
+  }
+});
 </script>
+</body>
+</html>
