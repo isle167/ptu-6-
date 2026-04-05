@@ -1,4 +1,3 @@
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -30,7 +29,7 @@
 
 /* ── 홈 ── */
 #s-home{padding:48px 32px;align-items:center;justify-content:center}
-.home-eyebrow{font-size:12px;letter-spacing:4px;color:var(--muted);margin-bottom:20px;font-family:var(--f-mono)}
+.home-eyebrow{font-size:12px;letter-spacing:4px;color:var(--muted);margin-bottom:20px;margin-top:40px;font-family:var(--f-mono)}
 .home-title{font-family:var(--f-display);font-size:60px;color:var(--text);line-height:1;margin-bottom:8px;text-align:center}
 .home-title em{color:var(--indigo);font-style:italic}
 .home-sub{font-size:13px;color:var(--muted);letter-spacing:2px;margin-bottom:44px;text-align:center;font-family:var(--f-mono)}
@@ -72,7 +71,6 @@
 .g-stats{display:flex;gap:22px;margin-right:16px}
 .g-stat{font-size:13px;color:var(--muted);font-family:var(--f-mono)}
 .g-stat b{color:var(--text);font-weight:500}
-/* 나가기 버튼 */
 .g-exit-btn{
   background:none;border:1.5px solid var(--border);color:var(--muted);
   padding:6px 14px;border-radius:7px;cursor:pointer;
@@ -83,13 +81,11 @@
 
 /* ── 게임 바디 ── */
 .g-body{flex:1;display:flex;flex-direction:column;padding:22px;gap:16px}
-
 .prog-row{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .prog-lbl{font-size:12px;color:var(--muted);letter-spacing:1px;font-family:var(--f-mono)}
 .prog-track{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
 .prog-fill{height:100%;border-radius:3px;transition:width .35s ease}
 .prog-cnt{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
-
 .dot-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s}
 .dot.done{background:var(--success)}
@@ -113,14 +109,12 @@
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 .shake{animation:shake .2s}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-
 .hint-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .chip{font-size:12px;color:var(--muted);padding:4px 13px;border:1px solid var(--border);border-radius:20px;background:var(--bg2);font-family:var(--f-mono)}
 .chip.combo{color:var(--amber);border-color:var(--amber);background:var(--amber-t);display:none}
 .pop{position:absolute;font-size:14px;font-weight:500;pointer-events:none;animation:popUp .7s ease-out forwards;font-family:var(--f-mono)}
 @keyframes popUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-50px)}}
 
-/* 한글 입력 모드 표시 */
 .lang-badge{
   font-size:11px;padding:3px 10px;border-radius:12px;
   font-family:var(--f-mono);letter-spacing:1px;font-weight:500;
@@ -139,7 +133,7 @@
 
 /* ── 결과 ── */
 #s-result{align-items:center;justify-content:center;padding:40px;gap:18px}
-.res-icon{font-size:48px}
+.res-icon{font-size:40px; margin-top:80px}
 .res-title{font-family:var(--f-display);font-size:46px;color:var(--text)}
 .res-sub{font-size:12px;color:var(--muted);letter-spacing:2px;font-family:var(--f-mono)}
 .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:380px}
@@ -182,7 +176,7 @@
 .note-del:hover{background:var(--error-t);color:var(--error)}
 .note-actions{display:flex;gap:10px;margin-top:16px}
 
-/* ── 직접 추가 ── */
+/* ── 문제 추가 ── */
 #s-custom{padding:0}
 .form-group{margin-bottom:14px}
 .form-label{font-size:12px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;display:block;font-family:var(--f-mono)}
@@ -211,15 +205,48 @@
 /* ── 토스트 ── */
 .toast{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:white;font-size:13px;padding:9px 22px;border-radius:22px;letter-spacing:1px;z-index:99;font-family:var(--f-mono);animation:fadeInOut 2s ease forwards;white-space:nowrap}
 @keyframes fadeInOut{0%{opacity:0;transform:translateX(-50%) translateY(8px)}15%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0}}
+
+/* ── 오답노트 가리기(플래시카드) 기능 ── */
+.mask-btn {
+  padding: 5px 12px; border-radius: 14px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--muted); font-size: 11px; 
+  cursor: pointer; transition: all 0.2s; font-family: var(--f-mono);
+}
+.mask-btn.active {
+  background: var(--indigo); color: white; border-color: var(--indigo);
+}
+.mask-word .note-word,
+.mask-mean .note-mean {
+  background-color: var(--border2);
+  color: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s, color 0.2s;
+}
+.mask-word .note-word:hover,
+.mask-mean .note-mean:hover {
+  background-color: var(--muted);
+}
+.mask-word .note-word.revealed { background-color: transparent; color: var(--text); }
+.mask-mean .note-mean.revealed { background-color: transparent; color: var(--muted); }
 </style>
 
 <div id="root">
 
-<!-- ═══════════════════════════ 홈 ═══════════════════════════ -->
 <div id="s-home" class="screen active">
+  <div class="nav-bar" style="position:absolute; top:0; left:0; width:100%; box-sizing:border-box;">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
+  </div>
+
   <div class="home-eyebrow">EXAM TYPING TRAINER v4.0</div>
   <div class="home-title">Type<em>Exam</em></div>
   <div class="home-sub">정처기 실기 · 토익 — 파트별 타이핑 훈련</div>
+
   <div class="exam-grid">
     <div class="exam-card" style="--ca:var(--indigo);--ct:var(--indigo-t)" id="card-jcs" onclick="selExam('jcs')">
       <div class="card-icon">💻</div>
@@ -237,14 +264,12 @@
   <button class="btn-start" id="btn-go" disabled onclick="gopart()">파트 선택 →</button>
 </div>
 
-<!-- ═══════════════════════════ 파트 선택 ═══════════════════════════ -->
 <div id="s-part" class="screen">
   <div class="nav-bar">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
-      <button class="nav-tab active" onclick="goHome()">홈</button>
       <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
-      <button class="nav-tab" onclick="showScreen('s-custom')">직접추가</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
     </div>
   </div>
   <div style="padding:24px 28px">
@@ -257,7 +282,6 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════ 게임 ═══════════════════════════ -->
 <div id="s-game" class="screen">
   <div class="g-hud">
     <div class="g-badge" id="g-badge"></div>
@@ -267,7 +291,6 @@
       <div class="g-stat">ACC <b id="g-acc">100%</b></div>
       <div class="g-stat">COMBO <b id="g-combo" style="color:var(--amber)">0</b></div>
     </div>
-    <!-- 나가기 버튼 -->
     <button class="g-exit-btn" onclick="exitGame()">✕ 나가기</button>
   </div>
   <div class="g-body">
@@ -281,7 +304,6 @@
       <div class="wc-top">
         <div class="wc-label" id="wc-lbl">DEFINITION</div>
         <div class="wc-div"></div>
-        <!-- 언어 배지: 현재 단어가 한글인지 영어인지 표시 -->
         <span class="lang-badge en" id="lang-badge">EN</span>
       </div>
       <div class="wc-mean" id="wc-mean">—</div>
@@ -291,21 +313,27 @@
       <div class="tw" id="tw"><span class="caret"></span></div>
       <div class="hint-row">
         <span class="chip" id="h-len">— 글자</span>
-        <span class="chip" id="h-first">첫 글자: —</span>
+        <span class="chip" id="h-first" style="display:none"></span>
         <span class="chip combo" id="h-combo">🔥 COMBO!</span>
       </div>
     </div>
   </div>
   <div class="g-input-row">
     <div class="g-prompt">›</div>
-    <input id="g-input" type="text" placeholder="여기에 타이핑..." autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="off"/>
+    <input id="g-input" type="text" placeholder="Type then press Enter..." autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="off"/>
     <button class="skip-btn" onclick="skip()">SKIP</button>
   </div>
 </div>
 
-<!-- ═══════════════════════════ 결과 ═══════════════════════════ -->
 <div id="s-result" class="screen" style="align-items:center;justify-content:center">
-  <div class="res-icon" id="res-icon">🎉</div>
+  <div class="nav-bar" style="position:absolute; top:0; left:0; width:100%; box-sizing:border-box;">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
+  </div>
+  <div class="res-icon" id="res-icon" style="margin-top: 80px; font-size: 40px;">🎉</div>
   <div class="res-title">Result</div>
   <div class="res-sub" id="res-sub">SESSION COMPLETE</div>
   <div class="res-grid">
@@ -325,47 +353,49 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════ 오답노트 ═══════════════════════════ -->
 <div id="s-wrong" class="screen">
   <div class="nav-bar">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
-      <button class="nav-tab" onclick="goHome()">홈</button>
       <button class="nav-tab active" onclick="showScreen('s-wrong')">오답노트</button>
-      <button class="nav-tab" onclick="showScreen('s-custom')">직접추가</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
     </div>
   </div>
   <div class="page-body">
     <div class="page-header">
-      <div class="page-title">오답 노트</div>
+      <div class="page-title" id="wrong-main-title">오답 노트</div>
       <div class="page-cnt" id="wrong-cnt">0개</div>
     </div>
-    <div id="wrong-empty" class="empty-state">
-      <div class="empty-icon">📋</div>
-      <div class="empty-text">아직 저장된 오답이 없어요</div>
-      <div class="empty-sub">게임 종료 후 '오답노트 저장'을 누르면 여기에 쌓여요</div>
+
+    <div id="wrong-part-view" style="display:none; width:100%;">
+       <div class="part-grid" id="wrong-part-grid"></div>
     </div>
-    <div id="wrong-list" class="note-list" style="display:none"></div>
-    <div id="wrong-actions" style="display:none" class="note-actions">
-      <button class="btn-amber" onclick="playWrong()" style="flex:1">오답만 다시 풀기 →</button>
-      <button class="btn-gray" onclick="clearWrong()">전체 삭제</button>
+
+    <div id="wrong-word-view" style="display:none; width:100%; flex-direction:column; flex:1;">
+       <div class="back-row" style="margin-bottom:16px;">
+         <button class="back-btn" onclick="showWrongParts()">← 파트 목록으로</button>
+         <div class="back-title" id="wrong-sub-title">상세 단어</div>
+       </div>
+       
+       <div id="wrong-list-count" style="font-size: 12px; color: var(--muted); margin-bottom: 6px; font-family: var(--f-mono); text-align: right;">0개</div>
+       
+       <div id="wrong-list" class="note-list" style="flex:1;"></div>
+       <div id="wrong-actions" class="note-actions"></div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════ 직접 추가 ═══════════════════════════ -->
 <div id="s-custom" class="screen">
   <div class="nav-bar">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
-      <button class="nav-tab" onclick="goHome()">홈</button>
       <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
-      <button class="nav-tab active" onclick="showScreen('s-custom')">직접추가</button>
+      <button class="nav-tab active" onclick="showScreen('s-custom')">문제추가</button>
     </div>
   </div>
   <div class="page-body">
     <div class="page-header" style="margin-bottom:16px">
-      <div class="page-title">직접 추가</div>
+      <div class="page-title">문제 추가</div>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -385,17 +415,16 @@
       <label class="form-label">CONTEXT — 예문 또는 헷갈리는 개념 메모 (선택)</label>
       <textarea class="form-textarea" id="f-ctx" rows="2" placeholder="예: 1NF→2NF→3NF→BCNF / 트랜잭션과 혼동 주의"></textarea>
     </div>
-    <button class="add-btn" onclick="addCustom()">+ 단어 추가</button>
-    <div class="section-divider">저장된 단어 목록</div>
+    <button class="add-btn" onclick="addCustom()">+ 문제 추가</button>
+    
+    <div class="section-divider">저장된 문제 목록</div>
     <div id="custom-list" class="custom-list"></div>
-    <div id="custom-empty" class="custom-empty">아직 추가한 단어가 없어요</div>
-    <button class="play-custom-btn" id="play-custom-btn" disabled onclick="playCustom()">직접 추가 단어로 게임 시작 →</button>
+    <div id="custom-empty" class="custom-empty">아직 추가한 문제가 없어요</div>
+    <button class="play-custom-btn" id="play-custom-btn" disabled onclick="playCustom()">추가한 문제로 게임 시작 →</button>
   </div>
 </div>
 
-</div><!-- /#root -->
-
-<script>
+</div><script>
 // ══════════════════════════════════════════════════════════════════
 //  데이터베이스
 // ══════════════════════════════════════════════════════════════════
@@ -537,8 +566,9 @@ let exam=null,partKey=null,words=[],idx=0,typed='';
 let combo=0,bestCombo=0,totalWords=0,totalChars=0,totalErrors=0;
 let startTime=null,sessionWrong=[],wpmTimer=null;
 let wrongNote=[];let customWords=[];
-// 한글 IME 조합 중인지 추적
 let isComposing=false;
+let isWordMasked = false;
+let isMeanMasked = false;
 
 try{wrongNote=JSON.parse(localStorage.getItem('te_wrong')||'[]');}catch(e){}
 try{customWords=JSON.parse(localStorage.getItem('te_custom')||'[]');}catch(e){}
@@ -559,33 +589,42 @@ function toast(msg){
   document.getElementById('root').appendChild(t);setTimeout(()=>t.remove(),2100);
 }
 
-function showScreen(id){
+// 💡 화면 이동 기능 + 브라우저 뒤로가기 기록 남기기
+function showScreen(id, pushHistory = true){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if(id==='s-wrong')renderWrong();
-  if(id==='s-custom')renderCustom();
+  const target = document.getElementById(id);
+  if(target) target.classList.add('active');
+  
+  if(id==='s-wrong') renderWrong();
+  if(id==='s-custom') renderCustom();
+
+  // 브라우저 주소창에 가짜 기록(#id)을 남겨서 뒤로가기 버튼 활성화
+  if(pushHistory) {
+    history.pushState({ screenId: id }, '', '#' + id);
+  }
 }
 
-/** 현재 단어가 한글인지 판별 */
+// 💡 브라우저 뒤로가기 버튼을 눌렀을 때 감지하는 코드
+window.addEventListener('popstate', function(event) {
+  if(event.state && event.state.screenId) {
+    // 사용자가 뒤로가기를 누르면, 기록해둔 이전 화면을 띄워줌 (히스토리 추가 안 함)
+    showScreen(event.state.screenId, false);
+  } else {
+    // 더 이상 돌아갈 기록이 없으면 홈 화면으로
+    showScreen('s-home', false);
+  }
+});
+
+// 앱 처음 켤 때 홈 화면을 초기 상태로 기록
+history.replaceState({ screenId: 's-home' }, '', '#s-home');
+
 function isKorean(w){
   return /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(w);
 }
 
-/** 한글 단어용 정규화: 자모 분리 없이 완성된 글자 단위로 비교
- *  영어는 toLowerCase 비교, 한글은 그대로 비교 */
 function wordsMatch(input, target){
-  if(isKorean(target)){
-    return input===target;
-  }
+  if(isKorean(target)) return input===target;
   return input.toLowerCase()===target.toLowerCase();
-}
-
-/** 올바른 접두사인지 확인 */
-function isValidPrefix(input, target){
-  if(isKorean(target)){
-    return target.startsWith(input);
-  }
-  return target.toLowerCase().startsWith(input.toLowerCase());
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -593,14 +632,21 @@ function isValidPrefix(input, target){
 // ══════════════════════════════════════════════════════════════════
 function goHome(){
   exam=null;
-  ['jcs','toeic'].forEach(k=>document.getElementById('card-'+k).classList.remove('selected'));
+  ['jcs','toeic'].forEach(k=>{
+    const el = document.getElementById('card-'+k);
+    if(el) el.classList.remove('selected');
+  });
   document.getElementById('btn-go').disabled=true;
   showScreen('s-home');
+  selExam('jcs'); // 홈 화면 갈때마다 정처기 기본 선택
 }
 
 function selExam(key){
   exam=key;
-  ['jcs','toeic'].forEach(k=>document.getElementById('card-'+k).classList.remove('selected'));
+  ['jcs','toeic'].forEach(k=>{
+    const el = document.getElementById('card-'+k);
+    if(el) el.classList.remove('selected');
+  });
   document.getElementById('card-'+key).classList.add('selected');
   document.getElementById('btn-go').disabled=false;
 }
@@ -624,7 +670,7 @@ function gopart(){
   if(customWords.length>0){
     const el=document.createElement('div');
     el.className='part-card custom';
-    el.innerHTML=`<div class="part-card-cnt">${customWords.length}문항</div><div class="part-name">✏ 직접 추가 단어</div><div class="part-desc">내가 추가한 단어 모음</div>`;
+    el.innerHTML=`<div class="part-card-cnt">${customWords.length}문항</div><div class="part-name">✏ 추가한 문제</div><div class="part-desc">내가 추가한 문제 모음</div>`;
     el.onclick=()=>playCustom();
     grid.appendChild(el);
   }
@@ -648,7 +694,6 @@ function startGame(items,label){
   document.getElementById('wc-lbl').textContent=exam==='toeic'?'MEANING':'DEFINITION';
   showScreen('s-game');
   loadWord();
-  setTimeout(()=>document.getElementById('g-input').focus(),80);
 }
 
 function buildDots(){
@@ -664,119 +709,89 @@ function loadWord(){
   const ko=isKorean(item.w);
   document.getElementById('wc-mean').textContent=item.m;
   document.getElementById('wc-ctx').textContent=item.c?'→ '+item.c:'';
+  
   document.getElementById('h-len').textContent=item.w.length+'글자';
-  document.getElementById('h-first').textContent='첫 글자: '+item.w[0];
+  
   document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
   document.getElementById('g-cnt').textContent=idx+' / '+words.length;
-  // 언어 배지 업데이트
+  
   const badge=document.getElementById('lang-badge');
   if(ko){badge.textContent='KO';badge.className='lang-badge ko';}
   else{badge.textContent='EN';badge.className='lang-badge en';}
-  // 입력창 placeholder 업데이트
-  document.getElementById('g-input').placeholder=ko?'한글로 타이핑...':'Type here...';
-  buildDots();typed='';renderWord();
+  
+  document.getElementById('g-input').placeholder=ko?'한글로 타이핑 후 엔터...':'Type then press Enter...';
+  
+  buildDots();
+  typed='';
+  renderWord();
   document.getElementById('g-input').value='';
+  
+  setTimeout(() => { 
+    const gInput = document.getElementById('g-input');
+    if(gInput) gInput.focus(); 
+  }, 100);
 }
 
-// ══════════════════════════════════════════════════════════════════
-//  렌더 / 판정
-// ══════════════════════════════════════════════════════════════════
 function renderWord(){
-  const w=words[idx]?.w||'';
-  const ko=isKorean(w);
   let html='';
-
-  if(ko){
-    // 한글: 글자 단위 렌더. 조합 중인 마지막 글자는 항상 typed 색으로 처리
-    for(let i=0;i<w.length;i++){
-      if(i<typed.length){
-        const correct=typed[i]===w[i];
-        html+=`<span class="${correct?'tw-done':'tw-err'}">${w[i]}</span>`;
-      } else if(i===typed.length){
-        html+=`<span class="caret"></span><span class="tw-cur">${w[i]}</span>`;
-      } else {
-        html+=`<span class="tw-cur">${w[i]}</span>`;
-      }
-    }
-    // typed가 w보다 길면 caret은 끝에
-    if(typed.length>=w.length)html+=`<span class="caret"></span>`;
-  } else {
-    // 영어: 기존 로직
-    for(let i=0;i<typed.length;i++)
-      html+=`<span class="${typed[i]?.toLowerCase()===w[i]?.toLowerCase()?'tw-done':'tw-err'}">${w[i]||''}</span>`;
-    html+=`<span class="caret"></span>`;
-    for(let i=typed.length;i<w.length;i++)
-      html+=`<span class="tw-cur">${w[i]}</span>`;
+  for(let i=0; i<typed.length; i++){
+    html+=`<span style="color: var(--text);">${typed[i]}</span>`;
   }
+  html+=`<span class="caret"></span>`;
   document.getElementById('tw').innerHTML=html;
 }
 
-function processInput(val){
+// ══════════════════════════════════════════════════════════════════
+// 판정 및 엔터키 제출
+// ══════════════════════════════════════════════════════════════════
+function submitAnswer(val){
   if(idx>=words.length)return;
   const w=words[idx].w;
-  typed=val;
 
-  if(wordsMatch(val,w)){
-    // ✓ 정답
-    if(!startTime){startTime=Date.now();wpmTimer=setInterval(updateStats,2000);}
+  if(!startTime){startTime=Date.now();wpmTimer=setInterval(updateStats,2000);}
+
+  if(wordsMatch(val.trim(), w)){
     totalWords++;totalChars+=w.length;combo++;bestCombo=Math.max(bestCombo,combo);
     document.getElementById('g-combo').textContent=combo;
     const chip=document.getElementById('h-combo');
     if(combo>=3){chip.style.display='inline';chip.textContent='🔥 '+combo+' COMBO!';}
     else chip.style.display='none';
     showPop(combo>=5?'🔥 +'+combo:'✓','var(--success)');
-    document.getElementById('g-input').value='';
-    typed='';idx++;
-    document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
-    document.getElementById('g-cnt').textContent=idx+' / '+words.length;
-    loadWord();
-  } else if(!isValidPrefix(val,w)){
-    // ✗ 오타 (접두사 불일치)
+  } else {
     totalErrors++;combo=0;
     document.getElementById('g-combo').textContent='0';
     document.getElementById('h-combo').style.display='none';
+    showPop('✗','var(--error)');
     const tw=document.getElementById('tw');
     tw.classList.add('shake');setTimeout(()=>tw.classList.remove('shake'),200);
-    // 마지막 글자 제거
-    const newVal=val.slice(0,-1);
-    document.getElementById('g-input').value=newVal;
-    typed=newVal;
-    renderWord();
-  } else {
-    // 진행 중 (올바른 접두사)
-    renderWord();
+    sessionWrong.push({...words[idx],exam:exam,examLabel:DB[exam]?.badge||'커스텀'});
   }
+
+  document.getElementById('g-input').value='';
+  typed='';
+  idx++;
+  document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
+  document.getElementById('g-cnt').textContent=idx+' / '+words.length;
+  loadWord();
 }
 
-// ══════════════════════════════════════════════════════════════════
-//  입력 이벤트: 한글 IME 조합 처리
-//  compositionstart/end 을 활용해 조합 중에는 판정을 보류하고
-//  compositionend 에서 최종 판정한다
-// ══════════════════════════════════════════════════════════════════
 const gInput=document.getElementById('g-input');
-
-gInput.addEventListener('compositionstart',()=>{
-  isComposing=true;
-});
-
+gInput.addEventListener('compositionstart',()=>{ isComposing=true; });
 gInput.addEventListener('compositionend',function(){
-  isComposing=false;
-  // 조합이 끝난 직후 최종값으로 판정
-  processInput(this.value);
+  isComposing=false; typed=this.value; renderWord(); 
 });
-
 gInput.addEventListener('input',function(){
-  // 한글 조합 중에는 글자 단위 렌더만 하고 정답 판정은 하지 않는다
-  if(isComposing){
-    typed=this.value;
-    renderWord();
-    return;
+  typed=this.value; renderWord(); 
+});
+gInput.addEventListener('keydown', function(e) {
+  if(e.key === 'Enter') {
+    if(e.isComposing || isComposing) return;
+    submitAnswer(this.value);
   }
-  processInput(this.value);
 });
 
 // ══════════════════════════════════════════════════════════════════
-//  통계 업데이트
+//  기타 기능 (통계, 스킵, 오답노트 등)
 // ══════════════════════════════════════════════════════════════════
 function updateStats(){
   if(!startTime||totalChars===0)return;
@@ -794,9 +809,6 @@ function showPop(text,color){
   a.appendChild(el);setTimeout(()=>el.remove(),700);
 }
 
-// ══════════════════════════════════════════════════════════════════
-//  SKIP / 나가기 / 게임 종료
-// ══════════════════════════════════════════════════════════════════
 function skip(){
   if(idx>=words.length)return;
   sessionWrong.push({...words[idx],exam:exam,examLabel:DB[exam]?.badge||'커스텀'});
@@ -805,10 +817,10 @@ function skip(){
   idx++;document.getElementById('g-input').value='';typed='';loadWord();
 }
 
-/** 게임 중 나가기 — 지금까지의 결과를 보여줌 */
 function exitGame(){
-  if(!confirm('게임을 중단하고 지금까지의 결과를 볼까요?'))return;
-  endGame();
+  if(!confirm('게임을 중단하고 파트 선택 화면으로 돌아가시겠습니까?')) return;
+  clearInterval(wpmTimer); 
+  gopart();
 }
 
 function endGame(){
@@ -838,9 +850,6 @@ function endGame(){
 
 function retry(){if(partKey&&words.length>0)startGame(words.map(w=>({...w})),partKey);}
 
-// ══════════════════════════════════════════════════════════════════
-//  오답노트
-// ══════════════════════════════════════════════════════════════════
 function saveWrong(){
   if(sessionWrong.length===0){toast('저장할 오답이 없어요 🎉');return;}
   let added=0;
@@ -853,51 +862,144 @@ function saveWrong(){
 }
 
 function renderWrong(){
-  const cnt=wrongNote.length;
-  document.getElementById('wrong-cnt').textContent=cnt+'개';
-  const empty=document.getElementById('wrong-empty');
-  const list=document.getElementById('wrong-list');
-  const actions=document.getElementById('wrong-actions');
-  if(cnt===0){empty.style.display='flex';list.style.display='none';actions.style.display='none';return;}
-  empty.style.display='none';list.style.display='flex';actions.style.display='flex';
-  list.innerHTML=wrongNote.map((item,i)=>{
-    const isJcs=item.exam!=='toeic';
-    return `<div class="note-item">
-      <div class="note-word">${item.w}</div>
-      <div class="note-info">
-        <div class="note-mean">${item.m}</div>
-        <div class="note-meta">
-          <span class="note-exam" style="background:${isJcs?'var(--indigo-t)':'var(--green-t)'};color:${isJcs?'var(--indigo)':'var(--green)'}">${item.examLabel||'?'}</span>
-          ${(item.cnt||1)>1?`<span class="note-cnt">⚠ ${item.cnt}회 틀림</span>`:''}
-        </div>
-      </div>
-      <button class="note-del" onclick="delWrong(${i})">✕</button>
+  showWrongParts();
+}
+
+function showWrongParts() {
+  const cnt = wrongNote.length;
+  document.getElementById('wrong-main-title').textContent = '오답 노트';
+  document.getElementById('wrong-cnt').textContent = '총 ' + cnt + '개';
+
+  const partView = document.getElementById('wrong-part-view');
+  const wordView = document.getElementById('wrong-word-view');
+  const partGrid = document.getElementById('wrong-part-grid');
+
+  partView.style.display = 'block';
+  wordView.style.display = 'none';
+
+  if(cnt === 0) {
+    partGrid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1; padding-top:40px;">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">아직 저장된 오답이 없어요</div>
+      </div>`;
+    return;
+  }
+
+  const groups = {};
+  wrongNote.forEach(item => {
+    const label = item.examLabel || '기타';
+    if(!groups[label]) groups[label] = [];
+    groups[label].push(item);
+  });
+
+  partGrid.innerHTML = Object.keys(groups).map(label => {
+    const items = groups[label];
+    const isJcs = items[0].exam !== 'toeic' && label !== '커스텀';
+    const color = isJcs ? 'var(--indigo)' : (label==='커스텀' ? 'var(--amber)' : 'var(--green)');
+    const bgColor = isJcs ? 'var(--indigo-t)' : (label==='커스텀' ? 'var(--amber-t)' : 'var(--green-t)');
+
+    return `<div class="part-card" style="border-color:${color}; background:${bgColor}" onclick="showWrongWords('${label}')">
+      <div class="part-card-cnt" style="background:white; color:${color}">${items.length}단어</div>
+      <div class="part-name" style="color:${color}">${label}</div>
+      <div class="part-desc">클릭하여 오답 확인 및 복습</div>
     </div>`;
   }).join('');
 }
 
-function delWrong(i){wrongNote.splice(i,1);save();renderWrong();}
-function clearWrong(){if(confirm('오답 노트를 전부 삭제할까요?')){wrongNote=[];save();renderWrong();}}
-function playWrong(){
-  if(wrongNote.length===0){toast('오답 노트가 비어있어요');return;}
-  exam=wrongNote[0].exam||'jcs';
-  startGame(wrongNote.map(n=>({w:n.w,m:n.m,c:n.c||''})),'오답 노트 복습');
+function showWrongWords(label) {
+  const filteredNotes = wrongNote.filter(n => (n.examLabel || '기타') === label);
+
+  document.getElementById('wrong-main-title').textContent = '오답 노트';
+  document.getElementById('wrong-cnt').textContent = ''; 
+  document.getElementById('wrong-sub-title').textContent = label;
+
+  document.getElementById('wrong-part-view').style.display = 'none';
+  document.getElementById('wrong-word-view').style.display = 'flex';
+
+  const list = document.getElementById('wrong-list');
+  const actions = document.getElementById('wrong-actions');
+
+  isWordMasked = false;
+  isMeanMasked = false;
+  list.className = 'note-list';
+
+  list.innerHTML = filteredNotes.map((item) => {
+    const originalIndex = wrongNote.findIndex(n => n.w === item.w);
+    return `<div class="note-item">
+      <div class="note-word" onclick="this.classList.toggle('revealed')">${item.w}</div>
+      <div class="note-info">
+        <div class="note-mean" onclick="this.classList.toggle('revealed')">${item.m}</div>
+        <div class="note-meta">
+          ${(item.cnt||1)>1 ? `<span class="note-cnt">⚠ ${item.cnt}회 틀림</span>` : ''}
+        </div>
+      </div>
+      <button class="note-del" onclick="delWrong(${originalIndex}, '${label}')">✕</button>
+    </div>`;
+  }).join('');
+
+  const countDiv = document.getElementById('wrong-list-count');
+  countDiv.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+      <div class="mask-toggles" style="display:flex; gap:8px;">
+        <button id="btn-mask-word" class="mask-btn" onclick="toggleMask('word')">단어 가리기</button>
+        <button id="btn-mask-mean" class="mask-btn" onclick="toggleMask('mean')">뜻 가리기</button>
+      </div>
+      <span>${filteredNotes.length}개</span>
+    </div>
+  `;
+
+  actions.innerHTML = `
+    <button class="btn-amber" onclick="playWrongPart('${label}')" style="flex:1">이 파트 오답만 다시 풀기 →</button>
+    <button class="btn-gray" onclick="clearWrongPart('${label}')">전체 삭제</button>
+  `;
 }
 
-// ══════════════════════════════════════════════════════════════════
-//  직접 추가
-// ══════════════════════════════════════════════════════════════════
+function toggleMask(type) {
+  const list = document.getElementById('wrong-list');
+  if (type === 'word') {
+    isWordMasked = !isWordMasked;
+    document.getElementById('btn-mask-word').classList.toggle('active', isWordMasked);
+    list.classList.toggle('mask-word', isWordMasked);
+  } else {
+    isMeanMasked = !isMeanMasked;
+    document.getElementById('btn-mask-mean').classList.toggle('active', isMeanMasked);
+    list.classList.toggle('mask-mean', isMeanMasked);
+  }
+}
+
+function delWrong(i, currentLabel){
+  wrongNote.splice(i,1); save();
+  const remaining = wrongNote.filter(n => (n.examLabel || '기타') === currentLabel);
+  if(remaining.length === 0) showWrongParts();
+  else showWrongWords(currentLabel);
+}
+
+function clearWrongPart(label){
+  if(confirm(`'${label}' 파트의 오답 노트를 전부 삭제할까요?`)){
+    wrongNote = wrongNote.filter(n => (n.examLabel || '기타') !== label);
+    save(); showWrongParts();
+  }
+}
+
+function playWrongPart(label){
+  const filteredNotes = wrongNote.filter(n => (n.examLabel || '기타') === label);
+  if(filteredNotes.length === 0) return;
+  exam = filteredNotes[0].exam || 'jcs';
+  startGame(filteredNotes.map(n=>({w:n.w, m:n.m, c:n.c||''})), `${label} 오답 복습`);
+}
+
 function addCustom(){
   const word=document.getElementById('f-word').value.trim();
   const mean=document.getElementById('f-mean').value.trim();
   const ctx=document.getElementById('f-ctx').value.trim();
-  const cat=document.getElementById('f-cat').value.trim()||'내 단어장';
+  const cat=document.getElementById('f-cat').value.trim()||'내 문제장';
   if(!word||!mean){toast('단어와 뜻은 필수예요!');return;}
-  if(customWords.find(c=>c.w===word)){toast('이미 추가된 단어예요');return;}
+  if(customWords.find(c=>c.w===word)){toast('이미 추가된 문제예요');return;}
   customWords.push({w:word,m:mean,c:ctx,cat,addedAt:Date.now()});
   save();
   ['f-word','f-mean','f-ctx','f-cat'].forEach(id=>document.getElementById(id).value='');
-  renderCustom();toast('단어가 추가됐어요!');
+  renderCustom();toast('문제가 추가됐어요!');
 }
 
 function renderCustom(){
@@ -920,11 +1022,18 @@ function renderCustom(){
 
 function delCustom(i){customWords.splice(i,1);save();renderCustom();}
 function playCustom(){
-  if(customWords.length===0){toast('추가된 단어가 없어요');return;}
+  if(customWords.length===0){toast('추가된 문제가 없어요');return;}
   exam=exam||'jcs';
-  startGame(customWords.map(c=>({w:c.w,m:c.m,c:c.c||''})),'직접 추가 단어');
+  startGame(customWords.map(c=>({w:c.w,m:c.m,c:c.c||''})),'추가한 문제');
 }
 
+// 이벤트 리스너 세팅
 document.getElementById('f-word').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('f-mean').focus();});
+document.getElementById('s-game').addEventListener('click', function() {
+  const gInput = document.getElementById('g-input');
+  if(gInput) gInput.focus();
+});
+
 renderCustom();
+selExam('jcs'); // 처음 시작할 때 정처기 기본 선택
 </script>
