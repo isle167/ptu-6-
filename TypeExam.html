@@ -915,13 +915,15 @@ const DB={
 };
 
 // 🔊 사운드 시스템 설정 
+// 🔊 사운드 시스템 설정 (경로 수정됨)
 const sfx = {
-  isMuted: false,
-  button: new Audio('button_snd.mp3'),
-  keyboard: new Audio('keyboard_snd.mp3'),
-  page: new Audio('page.mp3'),
-  over_bad: new Audio('game_over_q.mp3'),
-  over_perfect: new Audio('game_over_b.mp3')
+  isMuted: false,       // 현재 음소거 상태
+  lastVolume: 1,        // 음소거 직전의 볼륨 기억
+  button: new Audio('snd/button_snd.mp3'),
+  keyboard: new Audio('snd/keyboard_snd.mp3'),
+  page: new Audio('snd/page.mp3'),
+  over_bad: new Audio('snd/game_over_q.mp3'),
+  over_perfect: new Audio('snd/game_over_b.mp3')
 };
 
 // 소리 재생 공통 함수
