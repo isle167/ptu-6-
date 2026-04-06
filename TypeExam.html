@@ -245,10 +245,7 @@
   <div class="nav-bar" style="position:absolute; top:0; left:0; width:100%; box-sizing:border-box;">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
-      <div class="nav-tab" style="display:flex; align-items:center; gap:8px; padding:0 12px; cursor:default;">
-        <span class="mute-icon" style="cursor:pointer; font-size:16px; user-select:none;" onclick="toggleMuteIcon()">🔊</span>
-        <input type="range" class="vol-slider" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this.value)" style="width:70px; cursor:pointer;">
-      </div>
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
       <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
       <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
     </div>
@@ -279,13 +276,10 @@
   <div class="nav-bar">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
-  <div class="nav-tab" style="display:flex; align-items:center; gap:8px; padding:0 12px; cursor:default;">
-    <span class="mute-icon" style="cursor:pointer; font-size:16px; user-select:none;" onclick="toggleMuteIcon()">🔊</span>
-    <input type="range" class="vol-slider" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this.value)" style="width:70px; cursor:pointer;">
-  </div>
-  <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
-  <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
-</div>
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
   </div>
   <div style="padding:24px 28px">
     <div class="back-row">
@@ -301,13 +295,10 @@
   <div class="nav-bar">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
-  <div class="nav-tab" style="display:flex; align-items:center; gap:8px; padding:0 12px; cursor:default;">
-    <span class="mute-icon" style="cursor:pointer; font-size:16px; user-select:none;" onclick="toggleMuteIcon()">🔊</span>
-    <input type="range" class="vol-slider" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this.value)" style="width:70px; cursor:pointer;">
-  </div>
-  <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
-  <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
-</div>
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
   </div>
   <div class="page-body" style="justify-content:center; align-items:center; padding-top:40px;">
     <div style="width:min(780px,100%); display:flex; flex-direction:column; gap:20px;">
@@ -316,9 +307,9 @@
         <div class="page-cnt" id="mode-part-label">—</div>
       </div>
       <div class="exam-grid" style="grid-template-columns:repeat(2,minmax(240px,1fr));">
-        <div class="exam-card" style="--ca:var(--indigo);--ct:var(--indigo-t); cursor:pointer;" onclick="chooseMode('normal')">
+        <div class="exam-card selected" style="--ca:var(--indigo);--ct:var(--indigo-t); cursor:pointer;" onclick="chooseMode('normal')">
           <div class="card-icon">♾️</div>
-          <div class="card-name">연습 모드</div>
+          <div class="card-name">제한 없음</div>
           <div class="card-desc">시간 제한 없이 끝까지 연습</div>
           <div class="card-tags"><span class="tag">기본 모드</span></div>
         </div>
@@ -375,7 +366,7 @@
     <div class="type-area" id="type-area">
       <div class="tw" id="tw"><span class="caret"></span></div>
       <div class="hint-row">
-        <button class="chip" id="h-len" onclick="showHint()" style="cursor:pointer; transition:all 0.2s;">💡 글자수 힌트 보기</button>
+        <span class="chip" id="h-len">— 글자</span>
         <span class="chip" id="h-first" style="display:none"></span>
         <span class="chip combo" id="h-combo">🔥 COMBO!</span>
       </div>
@@ -392,13 +383,10 @@
   <div class="nav-bar" style="position:absolute; top:0; left:0; width:100%; box-sizing:border-box;">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
-  <div class="nav-tab" style="display:flex; align-items:center; gap:8px; padding:0 12px; cursor:default;">
-    <span class="mute-icon" style="cursor:pointer; font-size:16px; user-select:none;" onclick="toggleMuteIcon()">🔊</span>
-    <input type="range" class="vol-slider" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this.value)" style="width:70px; cursor:pointer;">
-  </div>
-  <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
-  <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
-</div>
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
   </div>
   <div class="res-icon" id="res-icon" style="margin-top: 80px; font-size: 40px;">🎉</div>
   <div class="res-title" id="res-title">Result</div>
@@ -424,13 +412,9 @@
   <div class="nav-bar">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
-  <div class="nav-tab" style="display:flex; align-items:center; gap:8px; padding:0 12px; cursor:default;">
-    <span class="mute-icon" style="cursor:pointer; font-size:16px; user-select:none;" onclick="toggleMuteIcon()">🔊</span>
-    <input type="range" class="vol-slider" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this.value)" style="width:70px; cursor:pointer;">
-  </div>
-  <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
-  <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
-</div>
+      <button class="nav-tab active" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
   </div>
   <div class="page-body">
     <div class="page-header">
@@ -458,13 +442,10 @@
   <div class="nav-bar">
     <div class="nav-logo" onclick="goHome()">TypeExam</div>
     <div class="nav-tabs">
-  <div class="nav-tab" style="display:flex; align-items:center; gap:8px; padding:0 12px; cursor:default;">
-    <span class="mute-icon" style="cursor:pointer; font-size:16px; user-select:none;" onclick="toggleMuteIcon()">🔊</span>
-    <input type="range" class="vol-slider" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this.value)" style="width:70px; cursor:pointer;">
-  </div>
-  <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
-  <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
-</div>
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab active" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
   </div>
   <div class="page-body">
     <div class="page-header" style="margin-bottom:16px">
@@ -935,8 +916,7 @@ const DB={
 
 // 🔊 사운드 시스템 설정 
 const sfx = {
-  isMuted: false,       // 현재 음소거 상태
-  lastVolume: 1,        // 음소거 직전의 볼륨 기억
+  isMuted: false,
   button: new Audio('button_snd.mp3'),
   keyboard: new Audio('keyboard_snd.mp3'),
   page: new Audio('page.mp3'),
@@ -944,53 +924,19 @@ const sfx = {
   over_perfect: new Audio('game_over_b.mp3')
 };
 
-// 볼륨 조절 및 슬라이더 동기화 함수
-function changeVolume(val) {
-  const volume = parseFloat(val);
-  sfx.isMuted = (volume === 0);
-  
-  // 볼륨이 0이 아닐 때만 이전 볼륨으로 기억 (나중에 복구하기 위함)
-  if (volume > 0) {
-    sfx.lastVolume = volume; 
-  }
-
-  // 실제 오디오 객체들의 볼륨 변경
-  for (let key in sfx) {
-    if (sfx[key] instanceof Audio) {
-      sfx[key].volume = volume;
-    }
-  }
-
-  // ★ 모든 화면의 슬라이더 바 위치를 현재 볼륨값(0~1)으로 강제 이동 ★
-  document.querySelectorAll('.vol-slider').forEach(slider => {
-    slider.value = volume;
-  });
-
-  // ★ 스피커 이모티콘 변경 (0이면 🔇, 아니면 🔊) ★
-  document.querySelectorAll('.mute-icon').forEach(icon => {
-    icon.textContent = volume === 0 ? '🔇' : '🔊';
-  });
-}
-
-// 스피커 이모티콘 클릭 시 실행되는 함수
-function toggleMuteIcon() {
-  if (sfx.isMuted) {
-    // 음소거 해제: 기억해둔 볼륨으로 돌림 (만약 0이었다면 기본값 1로 켬)
-    const targetVol = sfx.lastVolume > 0 ? sfx.lastVolume : 1;
-    changeVolume(targetVol);
-    toast('소리가 켜졌습니다');
-  } else {
-    // 음소거: 볼륨을 0으로 설정 (이때 changeVolume 함수가 슬라이더 바도 0으로 움직여줌)
-    changeVolume(0);
-    toast('음소거 되었습니다');
-  }
-}
-
 // 소리 재생 공통 함수
 function playSound(audio) {
-  if (audio.volume === 0 || sfx.isMuted) return; // 볼륨이 0이거나 음소거 상태면 재생 생략
+  if (sfx.isMuted) return;
   audio.currentTime = 0; // 연타 시 끊김 방지
   audio.play().catch(e => console.log("재생 차단:", e));
+}
+
+// 음소거 토글 함수
+function toggleMute() {
+  sfx.isMuted = !sfx.isMuted;
+  const btn = document.getElementById('mute-btn');
+  if(btn) btn.textContent = sfx.isMuted ? '🔇 음소거' : '🔊 소리 켜짐';
+  toast(sfx.isMuted ? '음소거 되었습니다' : '소리가 켜졌습니다');
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1073,6 +1019,7 @@ function goHome(){
   });
   document.getElementById('btn-go').disabled=true;
   showScreen('s-home');
+  selExam('jcs'); // 홈 화면 갈때마다 정처기 기본 선택
 }
 
 function selExam(key){
@@ -1180,11 +1127,6 @@ function startGame(items,label){
   partKey=label;words=[...items].sort(()=>Math.random()-.5);
   idx=0;typed='';combo=0;bestCombo=0;totalWords=0;totalChars=0;totalErrors=0;
   sessionWrong=[];startTime=null;clearInterval(wpmTimer); clearInterval(timerInterval);
-  
-  document.getElementById('g-wpm').textContent = '0';
-  document.getElementById('g-acc').textContent = '0%';
-  document.getElementById('g-combo').textContent = '0';
-
   if(gameMode==='timeattack'){
     remainingTime=timeLimit||60;
   } else {
@@ -1218,15 +1160,7 @@ function loadWord(){
   document.getElementById('wc-mean').textContent=item.m;
   document.getElementById('wc-ctx').textContent=item.c?'→ '+item.c:'';
   
-  // 🚨 새롭게 교체된 힌트 표시 로직
-  const hintBtn = document.getElementById('h-len');
-  if (gameMode === 'timeattack') {
-    hintBtn.style.display = 'none'; // 타임어택 모드: 아예 숨김
-  } else {
-    hintBtn.style.display = 'inline-block'; // 연습 모드: 보이기
-    hintBtn.textContent = '💡 글자수 힌트 보기'; // 새 문제마다 텍스트 초기화
-    hintBtn.disabled = false; // 버튼 다시 누를 수 있게 활성화
-  }
+  document.getElementById('h-len').textContent=item.w.length+'글자';
   
   document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
   document.getElementById('g-cnt').textContent=idx+' / '+words.length;
@@ -1263,7 +1197,7 @@ function renderWord(){
 function submitAnswer(val){
   if(idx>=words.length)return;
   
-  playSound(sfx.page);
+  playSound(sfx.page); // 🔊 엔터 치면 무조건 페이지 소리 재생
 
   const w=words[idx].w;
   if(!startTime){startTime=Date.now();wpmTimer=setInterval(updateStats,2000);}
@@ -1291,7 +1225,6 @@ function submitAnswer(val){
   document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
   document.getElementById('g-cnt').textContent=idx+' / '+words.length;
   loadWord();
-  updateStats();
 }
 
 const gInput=document.getElementById('g-input');
@@ -1314,11 +1247,11 @@ gInput.addEventListener('keydown', function(e) {
 //  기타 기능 (통계, 스킵, 오답노트 등)
 // ══════════════════════════════════════════════════════════════════
 function updateStats(){
-  if(!startTime) return;
-  const m = Math.max((Date.now() - startTime) / 60000, 0.01);
-  document.getElementById('g-wpm').textContent = Math.round((totalChars / 5) / m);
-  const acc = (totalChars + totalErrors) > 0 ? Math.round(totalChars / (totalChars + totalErrors) * 100) : 0;
-  document.getElementById('g-acc').textContent = acc + '%';
+  if(!startTime||totalChars===0)return;
+  const m=(Date.now()-startTime)/60000;
+  document.getElementById('g-wpm').textContent=Math.round((totalChars/5)/m);
+  const acc=(totalChars+totalErrors)>0?Math.round(totalChars/(totalChars+totalErrors)*100):100;
+  document.getElementById('g-acc').textContent=acc+'%';
 }
 
 function showPop(text,color){
@@ -1332,19 +1265,10 @@ function showPop(text,color){
 function skip(){
   if(idx>=words.length)return;
   playSound(sfx.button);
-  if(!startTime){startTime=Date.now();wpmTimer=setInterval(updateStats,2000);}
-  
   sessionWrong.push({...words[idx],exam:exam,examLabel:DB[exam]?.badge||'커스텀'});
-  totalErrors++; 
-  combo=0;
-  
-  document.getElementById('g-combo').textContent='0';
+  combo=0;document.getElementById('g-combo').textContent='0';
   document.getElementById('h-combo').style.display='none';
-  idx++;
-  document.getElementById('g-input').value='';
-  typed='';
-  loadWord();
-  updateStats();
+  idx++;document.getElementById('g-input').value='';typed='';loadWord();
 }
 
 function exitGame(){
@@ -1360,18 +1284,11 @@ function endGame(){
   const isTimeOver = gameMode==='timeattack' && remainingTime<=0 && idx<words.length;
   const mins=startTime?(Date.now()-startTime)/60000:1;
   const wpm=Math.round((totalChars/5)/Math.max(0.01,mins));
-  // 🚨 1. 아무것도 안 쳤을 때의 기본 정확도를 100에서 0으로 변경
-  const acc = (totalChars + totalErrors) > 0 ? Math.round(totalChars / (totalChars + totalErrors) * 100) : 0;
+  const acc=(totalChars+totalErrors)>0?Math.round(totalChars/(totalChars+totalErrors)*100):100;
   
-  // 🔊 2. 결과 소리 재생 로직 보완
-  if (totalChars === 0) {
-    // 타건수가 0이면 무조건 실패 효과음
-    playSound(sfx.over_bad);
-  } else if (acc === 100) {
-    playSound(sfx.over_perfect);
-  } else if (acc <= 30) {
-    playSound(sfx.over_bad);
-  }
+  // 🔊 결과 소리 재생
+  if (acc === 100) playSound(sfx.over_perfect);
+  else if (acc <= 30) playSound(sfx.over_bad);
 
   document.getElementById('res-title').textContent=isTimeOver?'TIME OVER':'Result';
   document.getElementById('res-icon').textContent=isTimeOver?'⏰':acc>=90?'🎉':acc>=70?'👍':'💪';
@@ -1606,37 +1523,14 @@ document.getElementById('s-game').addEventListener('click', function() {
   const gInput = document.getElementById('g-input');
   if(gInput) gInput.focus();
 });
-// 글자수 힌트 보기 버튼 클릭 시 실행
-function showHint() {
-  if (gameMode === 'timeattack') return; // 혹시 몰라 타임어택 방어
-  
-  playSound(sfx.button); // 클릭 소리 재생
-  const item = words[idx];
-  const hintBtn = document.getElementById('h-len');
-  
-  hintBtn.textContent = item.w.length + ' 글자'; // 실제 글자수 표시
-  hintBtn.disabled = true; // 한 문제당 한 번만 누를 수 있게 처리
-}
+
 renderCustom();
+selExam('jcs'); // 처음 시작할 때 정처기 기본 선택
 
-// 🔊 화면 어디든 클릭하면 'button_snd' 재생하기 (수정됨)
+// 🔊 화면 어디든 클릭하면 'button_snd' 재생하기
 document.addEventListener('click', function(e) {
-  const target = e.target;
-
-  // 1. 입력창이나 텍스트 박스 클릭 시 소리 내지 않고 무시
-  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-
-  // 2. 클릭 가능한 요소인지 확인 (버튼, 네비게이션 탭, 문제 카드 등)
-  const isClickable = target.tagName === 'BUTTON' ||
-                      target.closest('button') ||
-                      target.hasAttribute('onclick') ||
-                      target.closest('[onclick]') ||
-                      target.classList.contains('nav-tab') ||
-                      target.classList.contains('exam-card') ||
-                      target.classList.contains('part-card');
-
-  // 3. 클릭 가능한 요소일 때만 버튼 소리 재생
-  if (isClickable) {
+  // 입력창(input, textarea)을 클릭할 때는 예외
+  if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
     playSound(sfx.button);
   }
 });
