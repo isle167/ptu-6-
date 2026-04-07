@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TypeExam</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FAF8F4;--bg2:#F0EDE6;--bg3:#E8E4DC;--card:#FFFFFF;
+  --border:#D8D3CA;--border2:#C8C2B8;--text:#2C2C2C;--muted:#7A7570;--dim:#B0A99F;
+  --indigo:#2D4A8A;--indigo-t:#EBF0FA;--green:#2E6B4F;--green-t:#E8F4EE;
+  --correct:#5C4A9E;--success:#4A7C59;--error:#C0392B;--error-t:#FAEAEA;
+  --amber:#B07D2E;--amber-t:#FBF3E2;
+  --f-display:var(--font-serif);
+  --f-mono:var(--font-mono);
+  --f-body:var(--font-sans);
+}
+#root{
+  font-family:var(--f-body);
+  background:var(--bg);color:var(--text);
+  min-height:700px;border-radius:14px;overflow:hidden;position:relative
+}
+#root::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(0,0,0,0.022) 39px,rgba(0,0,0,0.022) 40px);pointer-events:none;z-index:0}
+.screen{display:none;flex-direction:column;min-height:700px;position:relative;z-index:1}
+.screen.active{display:flex}
+
+/* ── 내비게이션 ── */
+.nav-bar{display:flex;align-items:center;gap:12px;padding:14px 24px;background:var(--card);border-bottom:1.5px solid var(--border);flex-shrink:0}
+.nav-logo{font-family:var(--f-display);font-size:22px;color:var(--indigo);cursor:pointer;flex-shrink:0}
+.nav-tabs{display:flex;gap:4px;margin-left:auto}
+.nav-tab{padding:7px 18px;border-radius:7px;font-size:13px;letter-spacing:1px;color:var(--muted);cursor:pointer;transition:all .15s;border:none;background:none;font-family:var(--f-mono)}
+.nav-tab:hover{background:var(--bg2);color:var(--text)}
+.nav-tab.active{background:var(--indigo-t);color:var(--indigo);font-weight:500}
+
+/* ── 홈 ── */
+#s-home{padding:48px 32px;align-items:center;justify-content:center}
+.home-eyebrow{font-size:12px;letter-spacing:4px;color:var(--muted);margin-bottom:20px;margin-top:40px;font-family:var(--f-mono)}
+.home-title{font-family:var(--f-display);font-size:60px;color:var(--text);line-height:1;margin-bottom:8px;text-align:center}
+.home-title em{color:var(--indigo);font-style:italic}
+.home-sub{font-size:13px;color:var(--muted);letter-spacing:2px;margin-bottom:44px;text-align:center;font-family:var(--f-mono)}
+.exam-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:560px;margin-bottom:32px}
+.exam-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:26px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.exam-card::after{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:var(--ca,var(--indigo))}
+.exam-card:hover{border-color:var(--ca,var(--indigo));transform:translateY(-2px)}
+.exam-card.selected{border-color:var(--ca,var(--indigo));background:var(--ct,var(--indigo-t))}
+.card-icon{font-size:28px;margin-bottom:12px}
+.card-name{font-size:16px;font-weight:500;color:var(--text);margin-bottom:5px;font-family:var(--f-body)}
+.card-desc{font-size:13px;color:var(--muted);line-height:1.5;font-family:var(--f-body)}
+.card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.tag{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--border);color:var(--muted);font-family:var(--f-mono)}
+.btn-start{padding:15px 48px;border-radius:10px;border:none;background:var(--indigo);color:white;font-family:var(--f-mono);font-size:14px;letter-spacing:2px;cursor:pointer;transition:all .2s}
+.btn-start:hover{background:#243d75;transform:translateY(-1px)}
+.btn-start:disabled{background:var(--dim);cursor:not-allowed;transform:none}
+
+/* ── 파트 선택 ── */
+#s-part{padding:28px}
+.back-row{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.back-btn{background:none;border:1.5px solid var(--border);color:var(--muted);padding:7px 15px;border-radius:7px;cursor:pointer;font-family:var(--f-mono);font-size:13px;transition:all .15s}
+.back-btn:hover{border-color:var(--indigo);color:var(--indigo)}
+.back-title{font-size:17px;font-weight:500;color:var(--text);font-family:var(--f-body)}
+.back-cnt{font-size:13px;color:var(--muted);margin-left:auto;font-family:var(--f-mono)}
+.part-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.part-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all .18s;position:relative}
+.part-card:hover{border-color:var(--indigo);transform:translateY(-1px)}
+.part-card.custom{border-style:dashed;border-color:var(--amber);background:var(--amber-t)}
+.part-card-cnt{position:absolute;top:12px;right:12px;font-size:11px;color:var(--muted);background:var(--bg2);padding:3px 9px;border-radius:5px;font-family:var(--f-mono)}
+.part-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;font-family:var(--f-body)}
+.part-desc{font-size:12px;color:var(--muted);line-height:1.4;font-family:var(--f-body)}
+.part-card.custom .part-name{color:var(--amber)}
+
+/* ── 게임 HUD ── */
+#s-game{flex-direction:column}
+.g-hud{display:flex;align-items:center;padding:12px 22px;background:var(--card);border-bottom:1.5px solid var(--border);flex-shrink:0;gap:0}
+.g-badge{font-size:12px;font-weight:500;letter-spacing:2px;padding:5px 12px;border-radius:5px;margin-right:14px;font-family:var(--f-mono)}
+.g-pname{font-size:14px;color:var(--muted);flex:1;font-family:var(--f-body)}
+.g-stats{display:flex;gap:22px;margin-right:16px}
+.g-stat{font-size:13px;color:var(--muted);font-family:var(--f-mono)}
+.g-stat b{color:var(--text);font-weight:500}
+.g-exit-btn{
+  background:none;border:1.5px solid var(--border);color:var(--muted);
+  padding:6px 14px;border-radius:7px;cursor:pointer;
+  font-family:var(--f-mono);font-size:12px;letter-spacing:1px;
+  transition:all .15s;flex-shrink:0;
+}
+.g-exit-btn:hover{border-color:var(--error);color:var(--error);background:var(--error-t)}
+
+/* ── 게임 바디 ── */
+.g-body{flex:1;display:flex;flex-direction:column;padding:22px;gap:16px}
+.prog-row{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.prog-lbl{font-size:12px;color:var(--muted);letter-spacing:1px;font-family:var(--f-mono)}
+.prog-track{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .35s ease}
+.prog-cnt{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+.dot-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s}
+.dot.done{background:var(--success)}
+.dot.cur{background:var(--indigo);transform:scale(1.5)}
+
+/* ── 단어 카드 ── */
+.word-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:24px 26px;flex-shrink:0}
+.wc-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.wc-label{font-size:12px;letter-spacing:2px;color:var(--muted);font-family:var(--f-mono)}
+.wc-div{flex:1;height:1px;background:var(--border)}
+.wc-mean{font-size:18px;color:var(--text);line-height:1.65;font-family:var(--f-body);font-weight:500}
+.wc-ctx{font-size:14px;color:var(--muted);font-family:var(--f-body);font-style:italic;margin-top:8px;padding-left:12px;border-left:3px solid var(--border);line-height:1.55}
+
+/* ── 타이핑 영역 ── */
+.type-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:160px;position:relative}
+.tw{font-size:40px;font-weight:500;letter-spacing:6px;text-align:center;min-height:56px;font-family:var(--f-mono)}
+.tw-done{color:var(--correct)}
+.tw-cur{color:var(--text);opacity:.3}
+.tw-err{color:var(--error);text-decoration:underline wavy var(--error)}
+.caret{display:inline-block;width:2px;height:38px;background:var(--indigo);vertical-align:middle;animation:blink 1s infinite;border-radius:1px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.shake{animation:shake .2s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.hint-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.chip{font-size:12px;color:var(--muted);padding:4px 13px;border:1px solid var(--border);border-radius:20px;background:var(--bg2);font-family:var(--f-mono)}
+.chip.combo{color:var(--amber);border-color:var(--amber);background:var(--amber-t);display:none}
+.pop{position:absolute;font-size:14px;font-weight:500;pointer-events:none;animation:popUp .7s ease-out forwards;font-family:var(--f-mono)}
+@keyframes popUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-50px)}}
+
+.lang-badge{
+  font-size:11px;padding:3px 10px;border-radius:12px;
+  font-family:var(--f-mono);letter-spacing:1px;font-weight:500;
+  transition:all .2s;
+}
+.lang-badge.en{background:var(--indigo-t);color:var(--indigo);border:1px solid var(--indigo)}
+.lang-badge.ko{background:var(--green-t);color:var(--green);border:1px solid var(--green)}
+
+/* ── 입력행 ── */
+.g-input-row{padding:16px 22px;background:var(--card);border-top:1.5px solid var(--border);display:flex;gap:12px;align-items:center;flex-shrink:0}
+.g-prompt{color:var(--indigo);font-size:22px;font-family:var(--f-mono)}
+#g-input{flex:1;background:transparent;border:none;outline:none;font-family:var(--f-mono);font-size:22px;color:var(--text);caret-color:var(--indigo)}
+#g-input::placeholder{color:var(--dim)}
+.skip-btn{font-size:12px;color:var(--muted);background:none;border:1px solid var(--border);padding:6px 14px;border-radius:20px;cursor:pointer;font-family:var(--f-mono);transition:all .15s}
+.skip-btn:hover{color:var(--amber);border-color:var(--amber);background:var(--amber-t)}
+
+/* ── 결과 ── */
+#s-result{align-items:center;justify-content:center;padding:40px;gap:18px}
+.res-icon{font-size:40px; margin-top:80px}
+.res-title{font-family:var(--f-display);font-size:46px;color:var(--text)}
+.res-sub{font-size:12px;color:var(--muted);letter-spacing:2px;font-family:var(--f-mono)}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:380px}
+.res-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:18px;text-align:center}
+.res-val{font-size:36px;font-weight:500;color:var(--indigo);font-family:var(--f-mono)}
+.res-lbl{font-size:12px;color:var(--muted);letter-spacing:1px;margin-top:4px;font-family:var(--f-mono)}
+.res-wrong{width:100%;max-width:480px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;max-height:200px;overflow-y:auto}
+.rw-head{padding:10px 16px;background:var(--error-t);border-bottom:1px solid var(--border);font-size:12px;color:var(--error);letter-spacing:1px;position:sticky;top:0;font-family:var(--f-mono)}
+.rw-item{display:flex;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);align-items:baseline}
+.rw-item:last-child{border:none}
+.rw-word{font-size:15px;font-weight:500;color:var(--text);min-width:130px;font-family:var(--f-mono)}
+.rw-mean{font-size:13px;color:var(--muted);font-family:var(--f-body)}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.btn-indigo{padding:12px 28px;border-radius:9px;border:1.5px solid var(--indigo);background:transparent;color:var(--indigo);font-family:var(--f-mono);font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .15s}
+.btn-indigo:hover{background:var(--indigo-t)}
+.btn-amber{padding:12px 28px;border-radius:9px;border:1.5px solid var(--amber);background:transparent;color:var(--amber);font-family:var(--f-mono);font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .15s}
+.btn-amber:hover{background:var(--amber-t)}
+.btn-gray{padding:12px 28px;border-radius:9px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--f-mono);font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .15s}
+.btn-gray:hover{border-color:var(--muted);color:var(--text)}
+
+/* ── 오답노트 ── */
+#s-wrong{padding:0}
+.page-body{padding:24px 28px;display:flex;flex-direction:column;flex:1}
+.page-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.page-title{font-family:var(--f-display);font-size:26px;color:var(--text)}
+.page-cnt{font-size:13px;color:var(--muted);margin-left:auto;font-family:var(--f-mono)}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted)}
+.empty-icon{font-size:42px;opacity:.4}
+.empty-text{font-size:14px;letter-spacing:1px;font-family:var(--f-mono)}
+.empty-sub{font-size:13px;color:var(--dim);font-family:var(--f-body);text-align:center}
+.note-list{display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:440px}
+.note-item{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px}
+.note-word{font-size:16px;font-weight:500;color:var(--text);min-width:140px;flex-shrink:0;font-family:var(--f-mono)}
+.note-info{flex:1}
+.note-mean{font-size:13px;color:var(--muted);font-family:var(--f-body);line-height:1.5;margin-bottom:5px}
+.note-meta{display:flex;gap:7px;align-items:center}
+.note-exam{font-size:11px;padding:2px 8px;border-radius:4px;font-family:var(--f-mono)}
+.note-cnt{font-size:11px;color:var(--error);font-family:var(--f-mono)}
+.note-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:15px;padding:3px 7px;border-radius:5px;transition:all .15s;flex-shrink:0}
+.note-del:hover{background:var(--error-t);color:var(--error)}
+.note-actions{display:flex;gap:10px;margin-top:16px}
+
+/* ── 문제 추가 ── */
+#s-custom{padding:0}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;display:block;font-family:var(--f-mono)}
+.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:var(--f-mono);font-size:15px;color:var(--text);background:var(--card);outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--amber)}
+.form-textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:var(--f-body);font-size:14px;color:var(--text);background:var(--card);outline:none;transition:border-color .15s;resize:none;line-height:1.6}
+.form-textarea:focus{border-color:var(--amber)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.add-btn{width:100%;padding:12px;border-radius:9px;border:none;background:var(--amber);color:white;font-family:var(--f-mono);font-size:13px;letter-spacing:2px;cursor:pointer;transition:all .15s;margin-bottom:20px}
+.add-btn:hover{background:#9a6c26}
+.section-divider{font-size:11px;letter-spacing:2px;color:var(--muted);margin:0 0 12px;padding-bottom:7px;border-bottom:1px solid var(--border);font-family:var(--f-mono)}
+.custom-list{display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:240px}
+.custom-item{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:13px 15px;display:flex;align-items:flex-start;gap:12px}
+.ci-word{font-size:15px;font-weight:500;color:var(--text);min-width:130px;flex-shrink:0;font-family:var(--f-mono)}
+.ci-info{flex:1}
+.ci-mean{font-size:13px;color:var(--muted);font-family:var(--f-body);margin-bottom:3px;line-height:1.5}
+.ci-ctx{font-size:12px;color:var(--dim);font-family:var(--f-body);font-style:italic}
+.ci-cat{font-size:11px;color:var(--amber);margin-top:3px;display:block;font-family:var(--f-mono)}
+.ci-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:15px;padding:3px 6px;border-radius:5px;transition:all .15s;flex-shrink:0}
+.ci-del:hover{background:var(--error-t);color:var(--error)}
+.custom-empty{font-size:13px;color:var(--muted);text-align:center;padding:20px;letter-spacing:1px;font-family:var(--f-mono)}
+.play-custom-btn{width:100%;padding:12px;border-radius:9px;border:1.5px solid var(--amber);background:var(--amber-t);color:var(--amber);font-family:var(--f-mono);font-size:13px;letter-spacing:2px;cursor:pointer;transition:all .15s;margin-top:12px}
+.play-custom-btn:hover{background:var(--amber);color:white}
+.play-custom-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── 토스트 ── */
+.toast{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:white;font-size:13px;padding:9px 22px;border-radius:22px;letter-spacing:1px;z-index:99;font-family:var(--f-mono);animation:fadeInOut 2s ease forwards;white-space:nowrap}
+@keyframes fadeInOut{0%{opacity:0;transform:translateX(-50%) translateY(8px)}15%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0}}
+
+/* ── 오답노트 가리기(플래시카드) 기능 ── */
+.mask-btn {
+  padding: 5px 12px; border-radius: 14px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--muted); font-size: 11px; 
+  cursor: pointer; transition: all 0.2s; font-family: var(--f-mono);
+}
+.mask-btn.active {
+  background: var(--indigo); color: white; border-color: var(--indigo);
+}
+.mask-word .note-word,
+.mask-mean .note-mean {
+  background-color: var(--border2);
+  color: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s, color 0.2s;
+}
+.mask-word .note-word:hover,
+.mask-mean .note-mean:hover {
+  background-color: var(--muted);
+}
+.mask-word .note-word.revealed { background-color: transparent; color: var(--text); }
+.mask-mean .note-mean.revealed { background-color: transparent; color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="root">
+
+<div id="s-home" class="screen active">
+  <div class="nav-bar" style="position:absolute; top:0; left:0; width:100%; box-sizing:border-box;">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
+  </div>
+
+  <div class="home-eyebrow">EXAM TYPING TRAINER v4.0</div>
+  <div class="home-title">Type<em>Exam</em></div>
+  <div class="home-sub">정처기 실기 · 토익 — 파트별 타이핑 훈련</div>
+
+  <div class="exam-grid">
+    <div class="exam-card" style="--ca:var(--indigo);--ct:var(--indigo-t)" id="card-jcs" onclick="selExam('jcs')">
+      <div class="card-icon">💻</div>
+      <div class="card-name">정보처리기사 실기</div>
+      <div class="card-desc">핵심 영어 용어를 타이핑하며 자연스럽게 암기</div>
+      <div class="card-tags"><span class="tag">DB</span><span class="tag">알고리즘</span><span class="tag">네트워크</span><span class="tag">보안</span><span class="tag">SW공학</span></div>
+    </div>
+    <div class="exam-card" style="--ca:var(--green);--ct:var(--green-t)" id="card-toeic" onclick="selExam('toeic')">
+      <div class="card-icon">📝</div>
+      <div class="card-name">TOEIC</div>
+      <div class="card-desc">파트별 빈출 어휘를 반복 타이핑으로 체화</div>
+      <div class="card-tags"><span class="tag">Part 5</span><span class="tag">Part 6</span><span class="tag">Part 7</span><span class="tag">비즈니스</span></div>
+    </div>
+  </div>
+  <button class="btn-start" id="btn-go" disabled onclick="gopart()">파트 선택 →</button>
+</div>
+
+<div id="s-part" class="screen">
+  <div class="nav-bar">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
+  </div>
+  <div style="padding:24px 28px">
+    <div class="back-row">
+      <button class="back-btn" onclick="goHome()">← 뒤로</button>
+      <div class="back-title" id="part-title">—</div>
+      <div class="back-cnt" id="part-cnt"></div>
+    </div>
+    <div class="part-grid" id="part-grid"></div>
+  </div>
+</div>
+
+<div id="s-mode" class="screen">
+  <div class="nav-bar">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
+  </div>
+  <div class="page-body" style="justify-content:center; align-items:center; padding-top:40px;">
+    <div style="width:min(780px,100%); display:flex; flex-direction:column; gap:20px;">
+      <div class="page-header" style="margin-bottom:0;">
+        <div class="page-title">게임 모드 선택</div>
+        <div class="page-cnt" id="mode-part-label">—</div>
+      </div>
+      <div class="exam-grid" style="grid-template-columns:repeat(2,minmax(240px,1fr));">
+        <div class="exam-card selected" style="--ca:var(--indigo);--ct:var(--indigo-t); cursor:pointer;" onclick="chooseMode('normal')">
+          <div class="card-icon">♾️</div>
+          <div class="card-name">제한 없음</div>
+          <div class="card-desc">시간 제한 없이 끝까지 연습</div>
+          <div class="card-tags"><span class="tag">기본 모드</span></div>
+        </div>
+        <div class="exam-card" style="--ca:var(--amber);--ct:var(--amber-t); cursor:pointer;" onclick="chooseMode('timeattack')">
+          <div class="card-icon">⏱️</div>
+          <div class="card-name">타임어택</div>
+          <div class="card-desc">제한시간 안에 최대한 많이 입력</div>
+          <div class="card-tags"><span class="tag">60/90/120초</span></div>
+        </div>
+      </div>
+      <div id="time-select-box" style="display:none; background:var(--card); border:1px solid var(--border); border-radius:24px; padding:20px; box-shadow:var(--shadow);">
+        <div style="font-size:13px; color:var(--muted); margin-bottom:12px; font-family:var(--f-mono);">타임어택 시간을 골라주세요</div>
+        <div class="btn-row" style="justify-content:flex-start;">
+          <button class="btn-indigo" onclick="chooseTime(60)">60초</button>
+          <button class="btn-indigo" onclick="chooseTime(90)">90초</button>
+          <button class="btn-indigo" onclick="chooseTime(120)">120초</button>
+        </div>
+      </div>
+      <div class="btn-row" style="justify-content:flex-start;">
+        <button class="btn-gray" onclick="showScreen('s-part')">← 파트로 돌아가기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="s-game" class="screen">
+  <div class="g-hud">
+    <div class="g-badge" id="g-badge"></div>
+    <div class="g-pname" id="g-pname"></div>
+    <div class="g-stats">
+      <div class="g-stat">TIME <b id="g-timer">∞</b></div>
+      <div class="g-stat">WPM <b id="g-wpm">0</b></div>
+      <div class="g-stat">ACC <b id="g-acc">100%</b></div>
+      <div class="g-stat">COMBO <b id="g-combo" style="color:var(--amber)">0</b></div>
+    </div>
+    <button class="g-exit-btn" onclick="exitGame()">✕ 나가기</button>
+  </div>
+  <div class="g-body">
+    <div class="prog-row">
+      <div class="prog-lbl">PROGRESS</div>
+      <div class="prog-track"><div class="prog-fill" id="g-prog" style="width:0%"></div></div>
+      <div class="prog-cnt" id="g-cnt">0/0</div>
+    </div>
+    <div class="dot-row" id="dot-row"></div>
+    <div class="word-card">
+      <div class="wc-top">
+        <div class="wc-label" id="wc-lbl">DEFINITION</div>
+        <div class="wc-div"></div>
+        <span class="lang-badge en" id="lang-badge">EN</span>
+      </div>
+      <div class="wc-mean" id="wc-mean">—</div>
+      <div class="wc-ctx" id="wc-ctx"></div>
+    </div>
+    <div class="type-area" id="type-area">
+      <div class="tw" id="tw"><span class="caret"></span></div>
+      <div class="hint-row">
+        <span class="chip" id="h-len">— 글자</span>
+        <span class="chip" id="h-first" style="display:none"></span>
+        <span class="chip combo" id="h-combo">🔥 COMBO!</span>
+      </div>
+    </div>
+  </div>
+  <div class="g-input-row">
+    <div class="g-prompt">›</div>
+    <input id="g-input" type="text" placeholder="Type then press Enter..." autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="off"/>
+    <button class="skip-btn" onclick="skip()">SKIP</button>
+  </div>
+</div>
+
+<div id="s-result" class="screen" style="align-items:center;justify-content:center">
+  <div class="nav-bar" style="position:absolute; top:0; left:0; width:100%; box-sizing:border-box;">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
+  </div>
+  <div class="res-icon" id="res-icon" style="margin-top: 80px; font-size: 40px;">🎉</div>
+  <div class="res-title" id="res-title">Result</div>
+  <div class="res-sub" id="res-sub">SESSION COMPLETE</div>
+  <div class="res-grid">
+    <div class="res-card"><div class="res-val" id="r-wpm">0</div><div class="res-lbl">AVG WPM</div></div>
+    <div class="res-card"><div class="res-val" id="r-acc">0%</div><div class="res-lbl">ACCURACY</div></div>
+    <div class="res-card"><div class="res-val" id="r-words">0</div><div class="res-lbl">WORDS</div></div>
+    <div class="res-card"><div class="res-val" id="r-combo">0</div><div class="res-lbl">BEST COMBO</div></div>
+  </div>
+  <div class="res-wrong" id="res-wrong" style="display:none">
+    <div class="rw-head">오답 복습</div>
+    <div id="rw-list"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-indigo" onclick="retry()">↺ 다시 풀기</button>
+    <button class="btn-amber" onclick="saveWrong()">오답노트 저장</button>
+    <button class="btn-gray" onclick="goHome()">홈으로</button>
+  </div>
+</div>
+
+<div id="s-wrong" class="screen">
+  <div class="nav-bar">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="page-header">
+      <div class="page-title" id="wrong-main-title">오답 노트</div>
+      <div class="page-cnt" id="wrong-cnt">0개</div>
+    </div>
+
+    <div id="wrong-part-view" style="display:block; width:100%;">
+       <div class="part-grid" id="wrong-part-grid"></div>
+    </div>
+
+    <div id="wrong-word-view" style="display:none; width:100%; flex-direction:column; flex:1;">
+       <div class="back-row" style="margin-bottom:16px;">
+         <button class="back-btn" onclick="showWrongParts()">← 파트 목록으로</button>
+         <div class="back-title" id="wrong-sub-title">상세 단어</div>
+       </div>
+       <div id="wrong-list-count" style="font-size: 12px; color: var(--muted); margin-bottom: 6px; font-family: var(--f-mono); text-align: right;">0개</div>
+       <div id="wrong-list" class="note-list" style="flex:1;"></div>
+       <div id="wrong-actions" class="note-actions"></div>
+    </div>
+  </div>
+</div>
+
+<div id="s-custom" class="screen">
+  <div class="nav-bar">
+    <div class="nav-logo" onclick="goHome()">TypeExam</div>
+    <div class="nav-tabs">
+      <button id="mute-btn" class="nav-tab" onclick="toggleMute()">🔊 소리 켜짐</button> 
+      <button class="nav-tab" onclick="showScreen('s-wrong')">오답노트</button>
+      <button class="nav-tab active" onclick="showScreen('s-custom')">문제추가</button>
+    </div>
+  </div>
+  <div class="page-body">
+    <div class="page-header" style="margin-bottom:16px">
+      <div class="page-title">문제 추가</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">WORD (영어 또는 한글)</label>
+        <input class="form-input" id="f-word" placeholder="예: normalization  또는  정규화" autocomplete="off" spellcheck="false"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">CATEGORY</label>
+        <input class="form-input" id="f-cat" placeholder="예: 정처기 심화" autocomplete="off"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">MEANING — 타이핑 중 보여질 뜻</label>
+      <textarea class="form-textarea" id="f-mean" rows="2" placeholder="예: 데이터 중복을 제거하여 DB를 효율적으로 설계하는 과정"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">CONTEXT — 예문 또는 헷갈리는 개념 메모 (선택)</label>
+      <textarea class="form-textarea" id="f-ctx" rows="2" placeholder="예: 1NF→2NF→3NF→BCNF / 트랜잭션과 혼동 주의"></textarea>
+    </div>
+    <button class="add-btn" onclick="addCustom()">+ 문제 추가</button>
+    
+    <div class="section-divider">저장된 문제 목록</div>
+    <div id="custom-list" class="custom-list"></div>
+    <div id="custom-empty" class="custom-empty">아직 추가한 문제가 없어요</div>
+    <button class="play-custom-btn" id="play-custom-btn" disabled onclick="playCustom()">추가한 문제로 게임 시작 →</button>
+  </div>
+</div>
+
+</div>
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  데이터베이스
+// ══════════════════════════════════════════════════════════════════
+const DB={
+  jcs:{name:'정보처리기사 실기',badge:'정처기',prog:'#2D4A8A',
+    parts:{
+      '데이터베이스':{desc:'SQL, 정규화, 트랜잭션',items:[
+        {w:'normalization',m:'데이터 중복을 제거하여 DB를 효율적으로 설계하는 과정',c:'1NF→2NF→3NF→BCNF 단계로 진행된다'},
+        {w:'transaction',m:'DB 상태를 변환하는 하나의 논리적 작업 단위',c:'ACID — 원자성, 일관성, 격리성, 지속성을 보장해야 한다'},
+        {w:'index',m:'검색 속도를 향상시키기 위해 사용하는 데이터 구조',c:'B-Tree, Hash 인덱스 등이 있으며 DML 성능에 영향을 준다'},
+        {w:'deadlock',m:'두 트랜잭션이 서로의 자원을 기다리며 무한 대기하는 상태',c:'예방, 회피, 탐지, 복구 4가지 방법으로 해결한다'},
+        {w:'trigger',m:'특정 이벤트 발생 시 자동으로 실행되는 프로시저',c:'INSERT, UPDATE, DELETE 이벤트에 연결하여 사용한다'},
+        {w:'view',m:'하나 이상의 테이블을 기반으로 만든 가상 테이블',c:'데이터 보안과 복잡한 쿼리 단순화에 활용된다'},
+        {w:'rollback',m:'트랜잭션 오류 발생 시 이전 상태로 되돌리는 연산',c:'COMMIT 이전 상태로 DB 복원한다'},
+        {w:'schema',m:'데이터베이스 구조와 제약조건을 정의한 메타데이터',c:'외부, 개념, 내부 스키마 3단계로 나눈다'},
+        {w:'join',m:'둘 이상의 테이블을 연결하여 데이터를 조회하는 연산',c:'INNER, LEFT, RIGHT, FULL OUTER JOIN이 있다'},
+        {w:'subquery',m:'다른 쿼리 내부에 포함된 SELECT 문',c:'스칼라, 인라인 뷰, 중첩 서브쿼리로 구분된다'},
+        {w:'primary key',m:'각 행을 고유하게 식별하는 키',c:'중복 및 NULL 불가'},
+        {w:'foreign key',m:'다른 테이블의 기본키를 참조',c:'참조 무결성 유지'},
+        {w:'lock',m:'동시성 제어를 위한 잠금',c:'공유락/배타락'},
+        {w:'cursor',m:'쿼리 결과를 순차적으로 처리',c:'절차형 SQL'},
+        {w:'procedure',m:'저장된 SQL 실행 블록',c:'반복 작업 자동화'},
+        {w:'constraint',m:'데이터 무결성 규칙',c:'NOT NULL, UNIQUE'},
+        {w:'sequence',m:'자동 증가 값 생성 객체',c:'PK 생성'},
+        {w:'savepoint',m:'트랜잭션 중간 저장 지점',c:'부분 롤백'},
+        {w:'truncate',m:'테이블 데이터 전체 삭제',c:'롤백 불가'},
+        {w:'cascade',m:'참조된 데이터 함께 삭제',c:'연쇄 삭제'},
+        {w:'grant',m:'권한 부여 명령어',c:'접근 제어'},
+        {w:'revoke',m:'권한 회수 명령어',c:'보안 관리'},
+        {w:'union',m:'두 결과 집합 합치기',c:'중복 제거'},
+        {w:'intersect',m:'공통 결과 반환',c:'교집합'},
+        {w:'minus',m:'차집합 결과 반환',c:'A-B'},
+        {w:'distinct',m:'중복 제거 키워드',c:'SELECT DISTINCT'},
+        {w:'group by',m:'데이터 그룹화',c:'집계 함수와 사용'},
+        {w:'having',m:'그룹 조건 필터링',c:'GROUP BY와 사용'},
+        {w:'order by',m:'결과 정렬',c:'ASC, DESC'},
+        {w:'inner join',m:'공통 값만 결합',c:'기본 조인'},
+        {w:'outer join',m:'한쪽 포함 결합',c:'LEFT, RIGHT'},
+        {w:'cross join',m:'모든 조합 생성',c:'카티션 곱'},
+        {w:'index scan',m:'인덱스를 이용한 검색',c:'성능 향상'},
+        {w:'full scan',m:'전체 테이블 탐색',c:'비효율적'},
+        {w:'log',m:'트랜잭션 기록 파일',c:'복구용'},
+        {w:'checkpoint',m:'DB 상태 저장 지점',c:'복구 속도 향상'},
+        {w:'sharding',m:'데이터를 분산 저장',c:'확장성'},
+        {w:'replication',m:'데이터 복제',c:'가용성 향상'},
+        {w:'denormalization',m:'성능 위해 일부 중복 허용',c:'조회 속도 개선'},
+        {w:'materialized view',m:'데이터를 실제로 저장하는 뷰',c:'조회 성능 향상'},
+      ]},
+      '알고리즘':{desc:'정렬, 탐색, 자료구조',items:[
+        {w:'quicksort',m:'피벗을 기준으로 분할하는 평균 O(n log n) 정렬',c:'최악의 경우 O(n²), 불안정 정렬'},
+        {w:'recursion',m:'함수가 자기 자신을 호출하는 프로그래밍 기법',c:'반드시 기저 조건(Base Case)이 있어야 한다'},
+        {w:'stack',m:'후입선출(LIFO) 방식의 선형 자료구조',c:'함수 호출, DFS, 괄호 검사에 활용'},
+        {w:'queue',m:'선입선출(FIFO) 방식의 선형 자료구조',c:'BFS, 프린터 스풀링, 프로세스 스케줄링에 활용'},
+        {w:'hashing',m:'키를 해시 함수로 변환하여 데이터를 저장하는 기법',c:'평균 O(1) 탐색, 충돌 처리 필요'},
+        {w:'complexity',m:'알고리즘의 실행 시간이나 공간 사용량 분석 지표',c:'O(1), O(n), O(n log n), O(n²)'},
+        {w:'dijkstra',m:'단일 출발점에서 모든 노드까지 최단 경로 알고리즘',c:'음의 가중치 없는 그래프에서 사용'},
+        {w:'greedy',m:'각 단계에서 최선의 선택을 하는 알고리즘 설계',c:'최적 해를 항상 보장하지는 않는다'},
+        {w:'binary',m:'정렬된 배열에서 O(log n)으로 탐색하는 이진 탐색',c:'중간값과 비교하며 절반씩 범위를 줄인다'},
+        {w:'dynamic',m:'부분 문제 결과를 저장하며 해결하는 알고리즘 기법',c:'메모이제이션과 타뷸레이션 방식이 있다'},
+        {w:'merge sort',m:'분할 정복 기반 정렬',c:'O(n log n)'},
+        {w:'bubble sort',m:'인접 요소 비교 정렬',c:'O(n²)'},
+        {w:'selection sort',m:'최솟값 선택 정렬',c:'O(n²)'},
+        {w:'heap',m:'완전 이진 트리 구조',c:'우선순위 큐'},
+        {w:'graph',m:'노드와 간선 구조',c:'네트워크 표현'},
+        {w:'tree',m:'계층적 구조',c:'루트 존재'},
+        {w:'dfs',m:'깊이 우선 탐색',c:'스택 사용'},
+        {w:'bfs',m:'너비 우선 탐색',c:'큐 사용'},
+        {w:'priority queue',m:'우선순위 기반 큐',c:'힙 활용'},
+        {w:'backtracking',m:'조건 안맞으면 되돌림',c:'완전 탐색'},
+        {w:'divide and conquer',m:'문제 분할 후 해결',c:'재귀 구조'},
+        {w:'binary tree',m:'각 노드 최대 2자식',c:'기본 트리'},
+        {w:'balanced tree',m:'높이 균형 트리',c:'검색 효율'},
+        {w:'avl tree',m:'자기 균형 이진 트리',c:'회전 사용'},
+        {w:'red black tree',m:'균형 트리 구조',c:'색상 규칙'},
+        {w:'topological sort',m:'순서 정렬 알고리즘',c:'DAG에서 사용'},
+        {w:'floyd warshall',m:'모든 노드 최단 경로',c:'O(n³)'},
+        {w:'kruskal algorithm',m:'최소 신장 트리 알고리즘',c:'간선 기준'},
+        {w:'prim algorithm',m:'MST 알고리즘',c:'노드 기준'},
+        {w:'knapsack problem',m:'배낭 문제 알고리즘',c:'DP 활용'},
+        {w:'fibonacci sequence',m:'피보나치 수열',c:'DP 예제'},
+        {w:'permutation',m:'순열 생성',c:'모든 경우'},
+        {w:'combination',m:'조합 생성',c:'부분 선택'},
+        {w:'sliding window',m:'구간 이동 방식',c:'배열 문제'},
+        {w:'two pointer',m:'두 포인터 이동',c:'효율적 탐색'},
+        {w:'hash table',m:'키-값 저장 구조',c:'빠른 검색'},
+        {w:'linked list',m:'노드 연결 구조',c:'동적 크기'},
+        {w:'deque',m:'양쪽 삽입 가능한 큐',c:'유연한 구조'},
+        {w:'trie',m:'문자열 탐색 트리',c:'자동완성'},
+        {w:'segment tree',m:'구간 합 처리 자료구조',c:'빠른 쿼리'},
+      ]},
+      '네트워크':{desc:'OSI 7계층, 프로토콜',items:[
+        {w:'protocol',m:'컴퓨터 간 데이터 통신을 위한 규칙과 절차 집합',c:'TCP/IP가 인터넷의 표준 프로토콜'},
+        {w:'routing',m:'패킷이 목적지까지 전달될 경로를 결정하는 과정',c:'정적 라우팅과 동적 라우팅으로 구분'},
+        {w:'firewall',m:'네트워크 트래픽을 모니터링하고 제어하는 보안 시스템',c:'패킷 필터링, 상태 검사, 응용 게이트웨이 방식'},
+        {w:'subnet',m:'하나의 IP 네트워크를 여러 개의 작은 네트워크로 분할',c:'서브넷 마스크로 네트워크/호스트 부분 구분'},
+        {w:'bandwidth',m:'단위 시간당 전송 가능한 데이터의 최대 양',c:'bps(bits per second) 단위로 측정'},
+        {w:'gateway',m:'서로 다른 네트워크를 연결하는 장치 또는 소프트웨어',c:'OSI 7계층 전체에서 동작, 프로토콜 변환'},
+        {w:'ethernet',m:'유선 LAN에서 가장 널리 사용되는 네트워크 기술',c:'CSMA/CD 방식으로 충돌 감지 및 처리'},
+        {w:'packet',m:'네트워크에서 전송되는 데이터의 기본 단위',c:'헤더와 페이로드로 구성'},
+        {w:'latency',m:'데이터가 출발지에서 목적지까지 전달되는 시간',c:'RTT(Round Trip Time)로 측정, ms 단위'},
+        {w:'switch',m:'MAC 주소 기반으로 데이터를 목적지에 전달하는 장치',c:'OSI 2계층(데이터링크)에서 동작'},
+        {w:'ip address',m:'장치 식별 주소',c:'IPv4, IPv6'},
+        {w:'dns',m:'도메인→IP 변환',c:'인터넷 주소록'},
+        {w:'http',m:'웹 통신 프로토콜',c:'비암호화'},
+        {w:'https',m:'보안 웹 통신',c:'TLS 사용'},
+        {w:'tcp',m:'신뢰성 프로토콜',c:'연결형'},
+        {w:'udp',m:'빠른 비연결 프로토콜',c:'스트리밍'},
+        {w:'mac address',m:'물리 주소',c:'고유값'},
+        {w:'router',m:'경로 설정 장치',c:'3계층'},
+        {w:'hub',m:'모든 포트 전송',c:'비효율'},
+        {w:'arp',m:'IP→MAC 변환',c:'필수 프로토콜'},
+        {w:'icmp',m:'오류 메시지 전달',c:'ping 사용'},
+        {w:'ftp',m:'파일 전송 프로토콜',c:'비보안'},
+        {w:'smtp',m:'메일 전송 프로토콜',c:'이메일'},
+        {w:'pop3',m:'메일 수신 프로토콜',c:'단순 구조'},
+        {w:'imap',m:'메일 서버 동기화',c:'고급 기능'},
+        {w:'lan',m:'근거리 네트워크',c:'사무실'},
+        {w:'wan',m:'광역 네트워크',c:'인터넷'},
+        {w:'nat',m:'IP 주소 변환',c:'공인↔사설'},
+        {w:'dhcp',m:'자동 IP 할당',c:'편의성'},
+        {w:'port',m:'통신 번호',c:'서비스 구분'},
+        {w:'socket',m:'통신 endpoint',c:'프로그램 연결'},
+        {w:'throughput',m:'실제 전송량',c:'성능 지표'},
+        {w:'packet loss',m:'패킷 손실',c:'품질 저하'},
+        {w:'collision',m:'충돌 발생',c:'네트워크 문제'},
+        {w:'csma',m:'충돌 감지 방식',c:'이더넷'},
+        {w:'frame',m:'데이터 링크 단위',c:'MAC 포함'},
+        {w:'segment',m:'전송 계층 단위',c:'TCP 데이터'},
+        {w:'gateway device',m:'네트워크 연결 장치',c:'프로토콜 변환'},
+        {w:'ssid',m:'와이파이 이름',c:'무선 네트워크 식별'},
+        {w:'access point',m:'무선 네트워크 장치',c:'Wi-Fi 제공'},
+      ]},
+      '보안':{desc:'암호화, 인증, 취약점',items:[
+        {w:'encryption',m:'데이터를 암호화 알고리즘으로 변환하여 보호하는 과정',c:'대칭키(AES)와 비대칭키(RSA) 방식으로 구분'},
+        {w:'phishing',m:'신뢰할 수 있는 대상을 사칭하여 개인정보를 탈취하는 공격',c:'이메일, SMS, 전화를 통한 사회공학적 공격'},
+        {w:'malware',m:'시스템에 해를 끼치도록 설계된 악성 소프트웨어',c:'바이러스, 웜, 트로이목마, 랜섬웨어 포함'},
+        {w:'injection',m:'악의적인 코드를 입력으로 삽입하는 보안 공격',c:'SQL 인젝션 대표적, OWASP Top 10 포함'},
+        {w:'backdoor',m:'인증 절차를 우회하여 시스템에 접근하는 숨겨진 경로',c:'공격자가 지속적 접근을 위해 설치'},
+        {w:'spoofing',m:'신뢰할 수 있는 주체로 위장하여 시스템을 속이는 공격',c:'IP, MAC, ARP 스푸핑 등 다양한 형태'},
+        {w:'ransomware',m:'파일을 암호화하고 복호화 대가로 금전을 요구하는 악성코드',c:'WannaCry, Petya 등이 대표적 사례'},
+        {w:'authentication',m:'사용자나 시스템의 신원을 확인하는 과정',c:'지식, 소유, 생체인식 기반 3가지 요소'},
+        {w:'vulnerability',m:'시스템의 보안 취약점으로 공격자가 악용할 수 있는 결함',c:'CVE(Common Vulnerabilities and Exposures)로 관리'},
+        {w:'hashing',m:'임의 크기 데이터를 고정 크기 값으로 변환하는 단방향 함수',c:'SHA-256, MD5 — 무결성 검증에 사용'},
+        {w:'ssl',m:'암호화 프로토콜',c:'웹 보안'},
+        {w:'tls',m:'SSL 후속',c:'HTTPS 기반'},
+        {w:'xss',m:'스크립트 공격',c:'웹 취약점'},
+        {w:'csrf',m:'요청 위조 공격',c:'권한 도용'},
+        {w:'ddos',m:'분산 서비스 거부 공격',c:'서버 마비'},
+        {w:'zero-day',m:'미패치 취약점 공격',c:'위험'},
+        {w:'exploit',m:'취약점 공격 코드',c:'해킹 도구'},
+        {w:'patch',m:'보안 업데이트',c:'필수 적용'},
+        {w:'botnet',m:'감염 PC 집합',c:'DDOS 사용'},
+        {w:'keylogger',m:'키 입력 기록',c:'정보 탈취'},
+        {w:'brute force',m:'무차별 대입 공격',c:'비밀번호'},
+        {w:'dictionary attack',m:'사전 기반 공격',c:'빠른 해킹'},
+        {w:'two-factor authentication',m:'이중 인증',c:'보안 강화'},
+        {w:'biometric authentication',m:'생체 인증',c:'지문, 얼굴'},
+        {w:'ids',m:'침입 탐지 시스템',c:'모니터링'},
+        {w:'ips',m:'침입 차단 시스템',c:'자동 대응'},
+        {w:'sandbox',m:'격리 실행 환경',c:'악성코드 분석'},
+        {w:'encryption key',m:'암호화 키',c:'보안 핵심'},
+        {w:'public key',m:'공개키',c:'암호화'},
+        {w:'private key',m:'개인키',c:'복호화'},
+        {w:'hash collision',m:'해시 충돌',c:'보안 위험'},
+        {w:'salt',m:'해시 보강 값',c:'보안 강화'},
+        {w:'token',m:'인증 토큰',c:'로그인 유지'},
+        {w:'session hijacking',m:'세션 탈취 공격',c:'보안 위협'},
+        {w:'access control',m:'접근 제어',c:'권한 관리'},
+        {w:'audit log',m:'보안 로그 기록',c:'추적 가능'},
+        {w:'digital signature',m:'전자 서명',c:'무결성 보장'},
+        {w:'certificate',m:'인증서',c:'신뢰 검증'},
+        {w:'pharming',m:'DNS 변조 공격',c:'가짜 사이트 유도'},
+        {w:'shoulder surfing',m:'옆에서 정보 훔쳐보기',c:'물리적 공격'},
+      ]},
+      '소프트웨어공학':{desc:'방법론, 테스트, 설계 패턴',items:[
+        {w:'refactoring',m:'외부 동작 변경 없이 내부 코드 구조를 개선하는 작업',c:'코드 가독성과 유지보수성 향상'},
+        {w:'cohesion',m:'모듈 내부 요소들이 얼마나 밀접하게 관련되어 있는지 척도',c:'높을수록 좋으며 기능적 응집이 가장 높다'},
+        {w:'coupling',m:'모듈 간의 상호 의존 정도를 나타내는 척도',c:'낮을수록 좋으며 자료 결합이 가장 낮다'},
+        {w:'agile',m:'짧은 개발 주기를 반복하며 변화에 빠르게 대응하는 방법론',c:'스크럼, 칸반, XP가 대표적'},
+        {w:'prototype',m:'시스템의 주요 기능을 구현한 초기 모델',c:'요구사항 명확화와 사용자 피드백 반영 목적'},
+        {w:'inheritance',m:'부모 클래스의 속성과 메서드를 자식 클래스가 물려받는 개념',c:'코드 재사용성 향상, 다형성의 기반'},
+        {w:'encapsulation',m:'객체의 데이터와 메서드를 하나로 묶고 외부 접근을 제한하는 원칙',c:'정보 은닉으로 모듈 간 의존성 감소'},
+        {w:'polymorphism',m:'같은 인터페이스로 다양한 객체 타입을 다룰 수 있는 능력',c:'오버로딩과 오버라이딩으로 구현'},
+        {w:'singleton',m:'클래스 인스턴스를 하나만 생성하도록 보장하는 디자인 패턴',c:'전역 상태 관리와 자원 공유에 활용'},
+        {w:'interface',m:'두 시스템이나 컴포넌트 사이의 상호작용 지점 명세',c:'API가 대표적, 구현 세부 사항을 숨긴다'},
+        {w:'waterfall',m:'순차적 개발 모델',c:'전통 방식'},
+        {w:'scrum',m:'애자일 방법론',c:'스프린트'},
+        {w:'kanban',m:'작업 흐름 관리',c:'보드 사용'},
+        {w:'uml',m:'모델링 언어',c:'설계 도구'},
+        {w:'test case',m:'테스트 시나리오',c:'검증'},
+        {w:'debugging',m:'오류 수정',c:'개발 필수'},
+        {w:'deployment',m:'배포',c:'운영 적용'},
+        {w:'version control',m:'버전 관리',c:'Git'},
+        {w:'framework',m:'개발 구조',c:'생산성'},
+        {w:'library',m:'재사용 코드',c:'기능 제공'},
+        {w:'module',m:'프로그램 단위',c:'구조화'},
+        {w:'unit test',m:'단위 테스트',c:'기능 검증'},
+        {w:'integration test',m:'통합 테스트',c:'연동 검증'},
+        {w:'system test',m:'전체 테스트',c:'완성 검증'},
+        {w:'acceptance test',m:'인수 테스트',c:'사용자 검증'},
+        {w:'design pattern',m:'설계 패턴',c:'재사용'},
+        {w:'mvc',m:'모델-뷰-컨트롤러',c:'구조 분리'},
+        {w:'oop',m:'객체지향 프로그래밍',c:'핵심 개념'},
+        {w:'solid principles',m:'객체지향 설계 원칙',c:'유지보수'},
+        {w:'ci',m:'지속적 통합',c:'자동 빌드'},
+        {w:'cd',m:'지속적 배포',c:'자동 배포'},
+        {w:'build',m:'코드 컴파일 과정',c:'실행 파일'},
+        {w:'release',m:'버전 배포',c:'사용자 제공'},
+        {w:'maintenance',m:'유지보수',c:'오류 수정'},
+        {w:'scalability',m:'확장성',c:'성능'},
+        {w:'performance tuning',m:'성능 최적화',c:'속도 개선'},
+        {w:'availability',m:'가용성',c:'서비스 유지'},
+        {w:'usability',m:'사용성',c:'사용 편의'},
+        {w:'code review',m:'코드 검토',c:'품질 향상'},
+        {w:'technical debt',m:'기술 부채',c:'미래 비용'},
+      ]},
+    }
+  },
+  toeic:{name:'TOEIC',badge:'TOEIC',prog:'#2E6B4F',
+    parts:{
+      'Part 5 — 어법':{desc:'단문 빈칸 핵심 어휘',items:[
+        {w:'subsequent',m:'그 다음의, 이후의 — 시간적으로 뒤에 오는',c:'Subsequent meetings will be held every Monday.'},
+        {w:'mandatory',m:'의무적인, 강제적인 — 법이나 규정에 의해 요구되는',c:'Attendance at the safety training is mandatory.'},
+        {w:'designated',m:'지정된, 선임된 — 특정 역할이나 위치를 위해 선택된',c:'Please park in the designated area only.'},
+        {w:'provisional',m:'임시의, 잠정적인 — 최종 확정 전 일시적인',c:'A provisional agreement was reached yesterday.'},
+        {w:'reimburse',m:'상환하다, 변상하다 — 비용을 돌려주다',c:'The company will reimburse all travel expenses.'},
+        {w:'negotiate',m:'협상하다, 교섭하다 — 합의를 이끌어내다',c:'We need to negotiate better contract terms.'},
+        {w:'terminate',m:'종료하다, 해지하다 — 계약이나 고용을 끝내다',c:'Either party may terminate this agreement.'},
+        {w:'facilitate',m:'촉진하다, 용이하게 하다 — 과정을 더 쉽게 만들다',c:'The new software will facilitate communication.'},
+        {w:'sufficient',m:'충분한 — 필요를 충족하기에 넉넉한',c:'Please allow sufficient time for review.'},
+        {w:'pursuant',m:'~에 따라, ~에 의거하여',c:'Pursuant to company policy, all employees must...'},
+        {w:'approximate',m:'대략적인',c:'The approximate cost is $500.'},
+        {w:'comply',m:'준수하다',c:'Employees must comply with the rules.'},
+        {w:'eliminate',m:'제거하다',c:'We need to eliminate errors.'},
+        {w:'ensure',m:'보장하다',c:'Please ensure accuracy.'},
+        {w:'expand',m:'확장하다',c:'The company plans to expand overseas.'},
+        {w:'exceed',m:'초과하다',c:'Sales exceeded expectations.'},
+        {w:'generate',m:'생성하다',c:'The system generates reports.'},
+        {w:'imply',m:'암시하다',c:'His tone implies dissatisfaction.'},
+        {w:'indicate',m:'나타내다',c:'The data indicates growth.'},
+        {w:'maintain',m:'유지하다',c:'Maintain quality standards.'},
+        {w:'obtain',m:'얻다',c:'You must obtain approval.'},
+        {w:'permit',m:'허용하다',c:'Smoking is not permitted.'},
+        {w:'require',m:'요구하다',c:'This job requires experience.'},
+        {w:'respond',m:'응답하다',c:'Please respond quickly.'},
+        {w:'select',m:'선택하다',c:'Select the best option.'},
+        {w:'supply',m:'공급하다',c:'They supply raw materials.'},
+        {w:'transfer',m:'이동하다',c:'Funds will be transferred.'},
+        {w:'update',m:'업데이트하다',c:'Please update the file.'},
+        {w:'utilize',m:'활용하다',c:'Utilize available resources.'},
+        {w:'verify',m:'확인하다',c:'Verify your account.'},
+        {w:'adjust',m:'조정하다',c:'Adjust the schedule.'},
+        {w:'approve',m:'승인하다',c:'The manager approved it.'},
+        {w:'arrange',m:'정리하다',c:'Arrange the meeting.'},
+        {w:'cancel',m:'취소하다',c:'The event was canceled.'},
+        {w:'deliver',m:'전달하다',c:'Deliver the package.'},
+        {w:'explain',m:'설명하다',c:'Explain the process.'},
+        {w:'improve',m:'개선하다',c:'Improve efficiency.'},
+        {w:'measure',m:'측정하다',c:'Measure performance.'},
+        {w:'reduce',m:'줄이다',c:'Reduce costs.'},
+        {w:'support',m:'지원하다',c:'Support the project.'},
+      ]},
+      'Part 5 — 어휘':{desc:'빈출 비즈니스 어휘',items:[
+        {w:'implement',m:'시행하다, 구현하다 — 계획이나 결정을 실행에 옮기다',c:'The policy will be implemented next quarter.'},
+        {w:'acquisition',m:'인수, 획득 — 기업이나 자산을 사들이는 행위',c:'The acquisition of the startup was completed.'},
+        {w:'initiative',m:'주도권, 계획 — 새로운 프로젝트나 행동 방침',c:'The green initiative aims to reduce emissions.'},
+        {w:'comprehensive',m:'포괄적인, 종합적인 — 모든 면을 다루는',c:'A comprehensive review of the budget is needed.'},
+        {w:'collaborate',m:'협력하다, 공동 작업하다',c:'Our teams will collaborate on this project.'},
+        {w:'feasibility',m:'실현 가능성 — 계획이나 아이디어가 실행 가능한지 여부',c:'We must conduct a feasibility study first.'},
+        {w:'inventory',m:'재고, 재물 목록 — 보유 물품의 총량이나 목록',c:'Please update the inventory records weekly.'},
+        {w:'deadline',m:'마감 기한 — 작업이 완료되어야 하는 날짜나 시간',c:'The project deadline is end of this month.'},
+        {w:'executive',m:'임원, 경영진 — 조직의 고위 관리자',c:'The executive team approved the new strategy.'},
+        {w:'commodity',m:'상품, 원자재 — 시장에서 거래되는 기본 상품',c:"Oil is the world's most traded commodity."},
+        {w:'agreement',m:'계약',c:'They signed an agreement.'},
+        {w:'analysis',m:'분석',c:'The analysis was accurate.'},
+        {w:'budget',m:'예산',c:'The budget is limited.'},
+        {w:'client',m:'고객',c:'The client is satisfied.'},
+        {w:'contract',m:'계약서',c:'Review the contract carefully.'},
+        {w:'cost',m:'비용',c:'Costs are increasing.'},
+        {w:'demand',m:'수요',c:'Demand is rising.'},
+        {w:'employee',m:'직원',c:'Employees must follow rules.'},
+        {w:'equipment',m:'장비',c:'The equipment is new.'},
+        {w:'expense',m:'비용',c:'Travel expenses are covered.'},
+        {w:'facility',m:'시설',c:'The facility is modern.'},
+        {w:'fund',m:'자금',c:'Funds are allocated.'},
+        {w:'growth',m:'성장',c:'Company growth is steady.'},
+        {w:'income',m:'수입',c:'Income increased this year.'},
+        {w:'industry',m:'산업',c:'The industry is competitive.'},
+        {w:'investment',m:'투자',c:'Investment is necessary.'},
+        {w:'management',m:'관리',c:'Management approved it.'},
+        {w:'market',m:'시장',c:'The market is expanding.'},
+        {w:'offer',m:'제안',c:'They made an offer.'},
+        {w:'operation',m:'운영',c:'Operations are smooth.'},
+        {w:'payment',m:'지불',c:'Payment is due.'},
+        {w:'policy',m:'정책',c:'Company policy changed.'},
+        {w:'profit',m:'이익',c:'Profit increased.'},
+        {w:'project',m:'프로젝트',c:'The project started.'},
+        {w:'proposal',m:'제안서',c:'Submit a proposal.'},
+        {w:'revenue',m:'수익',c:'Revenue is rising.'},
+        {w:'sale',m:'판매',c:'Sales are strong.'},
+        {w:'service',m:'서비스',c:'Customer service improved.'},
+        {w:'strategy',m:'전략',c:'New strategy applied.'},
+        {w:'target',m:'목표',c:'Reach the target.'},
+      ]},
+      'Part 6 — 문맥':{desc:'장문 빈칸 고난도 어휘',items:[
+        {w:'accordingly',m:'그에 따라, 적절하게 — 결과나 상황에 맞게',c:'Please adjust your schedule accordingly.'},
+        {w:'nevertheless',m:'그럼에도 불구하고 — 앞 내용과 반대되는 내용 연결',c:'Results were poor; nevertheless, we continue.'},
+        {w:'furthermore',m:'게다가, 더욱이 — 추가 정보를 덧붙일 때',c:'Furthermore, the cost has been reduced by 20%.'},
+        {w:'incumbent',m:'현직의 / 의무로 지워진',c:'It is incumbent upon us to notify all clients.'},
+        {w:'liability',m:'책임, 부채 — 법적 의무나 재정적 채무',c:'The company accepts no liability for damages.'},
+        {w:'contingent',m:'~에 달려있는, 조건부의',c:'The deal is contingent on board approval.'},
+        {w:'consolidate',m:'통합하다, 강화하다 — 합치거나 더 강하게 만들다',c:'We plan to consolidate our offices into one.'},
+        {w:'disparity',m:'불균형, 격차 — 두 가지 사이의 큰 차이',c:'The disparity in wages needs to be addressed.'},
+        {w:'scrutinize',m:'면밀히 조사하다, 정밀 검토하다',c:'The auditors will scrutinize all financial records.'},
+        {w:'subsequent',m:'그 다음의, 이후에 발생하는',c:'Subsequent analysis revealed unexpected results.'},
+        {w:'alternatively',m:'대안으로',c:'Alternatively, we can delay.'},
+        {w:'consequently',m:'결과적으로',c:'Consequently, profits rose.'},
+        {w:'likewise',m:'마찬가지로',c:'Likewise, sales increased.'},
+        {w:'meanwhile',m:'그 사이에',c:'Meanwhile, production continued.'},
+        {w:'nonetheless',m:'그럼에도 불구하고',c:'Nonetheless, we succeeded.'},
+        {w:'otherwise',m:'그렇지 않으면',c:'Otherwise, it fails.'},
+        {w:'regardless',m:'상관없이',c:'Proceed regardless of cost.'},
+        {w:'similarly',m:'유사하게',c:'Similarly, results improved.'},
+        {w:'therefore',m:'그러므로',c:'Therefore, we agree.'},
+        {w:'thus',m:'따라서',c:'Thus, the plan works.'},
+        {w:'whereas',m:'반면에',c:'Whereas costs decreased.'},
+        {w:'although',m:'비록 ~일지라도',c:'Although difficult, we succeeded.'},
+        {w:'because',m:'왜냐하면',c:'Because demand increased.'},
+        {w:'despite',m:'~에도 불구하고',c:'Despite delays, finished.'},
+        {w:'even though',m:'비록 ~이지만',c:'Even though costly.'},
+        {w:'hence',m:'그러므로',c:'Hence, the decision.'},
+        {w:'in contrast',m:'대조적으로',c:'In contrast, profits fell.'},
+        {w:'in addition',m:'게다가',c:'In addition, costs dropped.'},
+        {w:'in fact',m:'사실은',c:'In fact, results improved.'},
+        {w:'instead',m:'대신에',c:'Use this instead.'},
+        {w:'moreover',m:'게다가',c:'Moreover, revenue grew.'},
+        {w:'on the contrary',m:'반대로',c:'On the contrary, it improved.'},
+        {w:'overall',m:'전반적으로',c:'Overall, success.'},
+        {w:'particularly',m:'특히',c:'Particularly important.'},
+        {w:'primarily',m:'주로',c:'Primarily focused.'},
+        {w:'specifically',m:'구체적으로',c:'Specifically stated.'},
+        {w:'subsequently',m:'그 후에',c:'Subsequently completed.'},
+        {w:'ultimately',m:'결국',c:'Ultimately successful.'},
+        {w:'whereby',m:'그에 의해',c:'Process whereby improved.'},
+        {w:'yet',m:'그러나',c:'Yet, results differ.'},
+      ]},
+      'Part 7 — 독해':{desc:'지문 독해 필수 단어',items:[
+        {w:'amendment',m:'수정, 개정 — 법률이나 문서에 대한 공식적인 변경',c:'An amendment to the contract was proposed.'},
+        {w:'warranty',m:'품질 보증, 보증서 — 제품 결함에 대한 보장',c:'The product comes with a two-year warranty.'},
+        {w:'renovation',m:'개조, 수리 — 건물이나 시설의 대대적인 수리',c:'The hotel is closed for renovation this winter.'},
+        {w:'itinerary',m:'여행 일정표 — 여행 계획의 세부 사항',c:'Please send the final itinerary by Friday.'},
+        {w:'subscription',m:'구독, 정기 구입 — 정기적으로 비용을 내고 이용',c:'Your subscription will renew automatically.'},
+        {w:'credentials',m:'자격증명, 인증서 — 능력이나 자격을 증명하는 서류',c:'Please submit your credentials with the application.'},
+        {w:'subsidiary',m:'자회사 — 모기업에 속한 하위 기업',c:'The subsidiary operates in Southeast Asia.'},
+        {w:'prerequisite',m:'전제 조건, 필수 요건',c:'A degree is a prerequisite for this position.'},
+        {w:'reimbursement',m:'상환, 변제 — 지출한 비용을 돌려받는 것',c:'Submit receipts for expense reimbursement.'},
+        {w:'fluctuation',m:'변동, 등락 — 가격이나 수치의 오르내림',c:'Price fluctuation affects our profit margin.'},
+        {w:'application',m:'신청서',c:'Submit your application.'},
+        {w:'appointment',m:'약속',c:'Schedule an appointment.'},
+        {w:'approval',m:'승인',c:'Await approval.'},
+        {w:'assignment',m:'업무',c:'Complete the assignment.'},
+        {w:'availability',m:'이용 가능성',c:'Check availability.'},
+        {w:'confirmation',m:'확인',c:'Send confirmation.'},
+        {w:'delivery',m:'배송',c:'Delivery was delayed.'},
+        {w:'description',m:'설명',c:'Read the description.'},
+        {w:'discount',m:'할인',c:'Discount applied.'},
+        {w:'document',m:'문서',c:'Review documents.'},
+        {w:'extension',m:'연장',c:'Request extension.'},
+        {w:'feedback',m:'피드백',c:'Provide feedback.'},
+        {w:'guideline',m:'지침',c:'Follow guidelines.'},
+        {w:'inquiry',m:'문의',c:'Customer inquiry received.'},
+        {w:'instruction',m:'지시',c:'Follow instructions.'},
+        {w:'issue',m:'문제',c:'Resolve the issue.'},
+        {w:'location',m:'위치',c:'Check location.'},
+        {w:'notice',m:'공지',c:'Notice was posted.'},
+        {w:'order',m:'주문',c:'Order confirmed.'},
+        {w:'package',m:'소포',c:'Package delivered.'},
+        {w:'policy update',m:'정책 변경',c:'Policy update announced.'},
+        {w:'procedure',m:'절차',c:'Follow procedure.'},
+        {w:'receipt',m:'영수증',c:'Keep the receipt.'},
+        {w:'refund',m:'환불',c:'Request a refund.'},
+        {w:'registration',m:'등록',c:'Complete registration.'},
+        {w:'reminder',m:'알림',c:'Reminder sent.'},
+        {w:'report',m:'보고서',c:'Submit report.'},
+        {w:'requirement',m:'요구사항',c:'Meet requirements.'},
+        {w:'schedule',m:'일정',c:'Check schedule.'},
+        {w:'shipment',m:'배송',c:'Shipment arrived.'},
+      ]},
+      '비즈니스 영어':{desc:'실무 이메일·회의 표현',items:[
+        {w:'agenda',m:'안건, 의제 — 회의에서 다룰 항목의 목록',c:'Please review the agenda before the meeting.'},
+        {w:'stakeholder',m:'이해관계자 — 프로젝트나 사업에 이해관계가 있는 사람',c:'All stakeholders must approve the proposal.'},
+        {w:'benchmark',m:'기준점, 벤치마크 — 성과를 비교하는 기준',c:'Our sales exceeded the industry benchmark.'},
+        {w:'leverage',m:'활용하다 — 이점을 최대한 이용하다',c:'We can leverage our existing network.'},
+        {w:'forecast',m:'예측, 예보하다 — 미래의 상황이나 수치를 예상하다',c:'Q4 revenue forecast looks promising.'},
+        {w:'overhead',m:'간접비, 경상비 — 제품 생산과 직접 관련 없는 운영 비용',c:'We need to reduce our overhead costs.'},
+        {w:'compliance',m:'준수, 규정 준수 — 법규나 규정을 따르는 것',c:'All departments must ensure regulatory compliance.'},
+        {w:'projection',m:'추정, 예상 — 미래 수치나 상황에 대한 계산',c:'The sales projection for next year is optimistic.'},
+        {w:'synergy',m:'시너지, 상승효과 — 협력으로 더 큰 효과를 내는 것',c:'The merger creates synergy between the teams.'},
+        {w:'portfolio',m:'포트폴리오, 작품집 — 투자 자산이나 작품의 모음',c:'Our investment portfolio is well-diversified.'},
+        {w:'action item',m:'실행 항목',c:'Please list all action items.'},
+        {w:'alignment',m:'의견 일치, 정렬',c:'We need team alignment.'},
+        {w:'approval',m:'승인',c:'Waiting for final approval.'},
+        {w:'backlog',m:'미처리 업무',c:'Clear the backlog this week.'},
+        {w:'capacity',m:'수용 능력',c:'We reached maximum capacity.'},
+        {w:'deliverable',m:'산출물',c:'Submit all deliverables on time.'},
+        {w:'efficiency',m:'효율성',c:'Improve operational efficiency.'},
+        {w:'engagement',m:'참여도',c:'Employee engagement increased.'},
+        {w:'execution',m:'실행',c:'Execution is critical to success.'},
+        {w:'feedback',m:'피드백',c:'We welcome your feedback.'},
+        {w:'handover',m:'인수인계',c:'Prepare the handover document.'},
+        {w:'insight',m:'통찰',c:'Gain valuable insights.'},
+        {w:'kpi',m:'핵심 성과 지표',c:'Track KPIs regularly.'},
+        {w:'milestone',m:'중간 목표',c:'We achieved a milestone.'},
+        {w:'objective',m:'목표',c:'Define clear objectives.'},
+        {w:'outcome',m:'결과',c:'The outcome was successful.'},
+        {w:'ownership',m:'책임 의식',c:'Take ownership of tasks.'},
+        {w:'pipeline',m:'진행 단계',c:'Sales pipeline is growing.'},
+        {w:'priority',m:'우선순위',c:'Set your priorities first.'},
+        {w:'process',m:'절차',c:'Improve the process flow.'},
+        {w:'productivity',m:'생산성',c:'Boost productivity levels.'},
+        {w:'resource',m:'자원',c:'Allocate resources wisely.'},
+        {w:'revenue',m:'수익',c:'Revenue increased this quarter.'},
+        {w:'risk',m:'위험',c:'Assess potential risks.'},
+        {w:'schedule',m:'일정',c:'Stick to the schedule.'},
+        {w:'strategy',m:'전략',c:'Implement a new strategy.'},
+        {w:'task',m:'업무',c:'Complete assigned tasks.'},
+        {w:'timeline',m:'일정표',c:'Follow the project timeline.'},
+        {w:'tracking',m:'추적',c:'Tracking progress is essential.'},
+        {w:'workflow',m:'업무 흐름',c:'Optimize the workflow.'},
+      ]},
+    }
+  }
+};
+
+// 🔊 사운드 시스템 설정 
+// 🔊 사운드 시스템 설정 (경로 수정됨)
+const sfx = {
+  isMuted: false,       // 현재 음소거 상태
+  lastVolume: 1,        // 음소거 직전의 볼륨 기억
+  button: new Audio('snd/button_snd.mp3'),
+  keyboard: new Audio('snd/keyboard_snd.mp3'),
+  page: new Audio('snd/page.mp3'),
+  over_bad: new Audio('snd/game_over_q.mp3'),
+  over_perfect: new Audio('snd/game_over_b.mp3')
+};
+
+// 소리 재생 공통 함수
+function playSound(audio) {
+  if (sfx.isMuted) return;
+  audio.currentTime = 0; // 연타 시 끊김 방지
+  audio.play().catch(e => console.log("재생 차단:", e));
+}
+
+// 음소거 토글 함수
+function toggleMute() {
+  sfx.isMuted = !sfx.isMuted;
+  const btn = document.getElementById('mute-btn');
+  if(btn) btn.textContent = sfx.isMuted ? '🔇 음소거' : '🔊 소리 켜짐';
+  toast(sfx.isMuted ? '음소거 되었습니다' : '소리가 켜졌습니다');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  상태 변수
+// ══════════════════════════════════════════════════════════════════
+let exam=null,partKey=null,words=[],idx=0,typed='';
+let combo=0,bestCombo=0,totalWords=0,totalChars=0,totalErrors=0;
+let startTime=null,sessionWrong=[],wpmTimer=null;
+let wrongNote=[];let customWords=[];
+let isComposing=false;
+let isWordMasked = false;
+let isMeanMasked = false;
+let gameMode='normal';
+let timeLimit=0, remainingTime=0, timerInterval=null;
+let pendingItems=null, pendingLabel='';
+let lastPlayedItems=null, lastPlayedLabel='';
+
+try{wrongNote=JSON.parse(localStorage.getItem('te_wrong')||'[]');}catch(e){}
+try{customWords=JSON.parse(localStorage.getItem('te_custom')||'[]');}catch(e){}
+
+function save(){
+  try{
+    localStorage.setItem('te_wrong',JSON.stringify(wrongNote));
+    localStorage.setItem('te_custom',JSON.stringify(customWords));
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  유틸
+// ══════════════════════════════════════════════════════════════════
+function toast(msg){
+  const existing=document.querySelector('.toast');if(existing)existing.remove();
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.getElementById('root').appendChild(t);setTimeout(()=>t.remove(),2100);
+}
+
+// 💡 화면 이동 기능 + 브라우저 뒤로가기 기록 남기기
+function showScreen(id, pushHistory = true){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const target = document.getElementById(id);
+  if(target) target.classList.add('active');
+  
+  if(id==='s-wrong') renderWrong();
+  if(id==='s-custom') renderCustom();
+
+  if(pushHistory) {
+    history.pushState({ screenId: id }, '', '#' + id);
+  }
+}
+
+// 💡 브라우저 뒤로가기 버튼을 눌렀을 때 감지하는 코드
+window.addEventListener('popstate', function(event) {
+  if(event.state && event.state.screenId) {
+    showScreen(event.state.screenId, false);
+  } else {
+    showScreen('s-home', false);
+  }
+});
+
+// 앱 처음 켤 때 홈 화면을 초기 상태로 기록
+history.replaceState({ screenId: 's-home' }, '', '#s-home');
+
+function isKorean(w){
+  return /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(w);
+}
+
+function wordsMatch(input, target){
+  if(isKorean(target)) return input===target;
+  return input.toLowerCase()===target.toLowerCase();
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  화면 이동
+// ══════════════════════════════════════════════════════════════════
+function goHome(){
+  exam=null;
+  ['jcs','toeic'].forEach(k=>{
+    const el = document.getElementById('card-'+k);
+    if(el) el.classList.remove('selected');
+  });
+  document.getElementById('btn-go').disabled=true;
+  showScreen('s-home');
+  selExam('jcs'); // 홈 화면 갈때마다 정처기 기본 선택
+}
+
+function selExam(key){
+  exam=key;
+  ['jcs','toeic'].forEach(k=>{
+    const el = document.getElementById('card-'+k);
+    if(el) el.classList.remove('selected');
+  });
+  document.getElementById('card-'+key).classList.add('selected');
+  document.getElementById('btn-go').disabled=false;
+}
+
+function gopart(){
+  if(!exam)return;
+  const d=DB[exam];
+  document.getElementById('part-title').textContent=d.name;
+  const pkeys=Object.keys(d.parts);
+  document.getElementById('part-cnt').textContent=pkeys.length+'개 파트';
+  const grid=document.getElementById('part-grid');
+  grid.innerHTML='';
+  pkeys.forEach(k=>{
+    const pt=d.parts[k];
+    const el=document.createElement('div');
+    el.className='part-card';
+    el.innerHTML=`<div class="part-card-cnt">${pt.items.length}문항</div><div class="part-name">${k}</div><div class="part-desc">${pt.desc}</div>`;
+    el.onclick=()=>{ playSound(sfx.button); openModeSelect(pt.items,k); }
+    grid.appendChild(el);
+  });
+  if(customWords.length>0){
+    const el=document.createElement('div');
+    el.className='part-card custom';
+    el.innerHTML=`<div class="part-card-cnt">${customWords.length}문항</div><div class="part-name">✏ 추가한 문제</div><div class="part-desc">내가 추가한 문제 모음</div>`;
+    el.onclick=()=>{ playSound(sfx.button); openModeSelect(customWords.map(c=>({w:c.w,m:c.m,c:c.c||''})),'추가한 문제'); }
+    grid.appendChild(el);
+  }
+  showScreen('s-part');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  게임 시작 / 로드
+// ══════════════════════════════════════════════════════════════════
+function formatTime(sec){
+  if(!Number.isFinite(sec) || sec<=0) return '0:00';
+  const min=Math.floor(sec/60);
+  const s=sec%60;
+  return `${min}:${String(s).padStart(2,'0')}`;
+}
+
+function updateTimerUI(){
+  document.getElementById('g-timer').textContent = gameMode==='timeattack' ? formatTime(remainingTime) : '∞';
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+  updateTimerUI();
+  timerInterval=setInterval(()=>{
+    remainingTime--;
+    if(remainingTime<=0){
+      remainingTime=0;
+      updateTimerUI();
+      clearInterval(timerInterval);
+      endGame();
+      return;
+    }
+    updateTimerUI();
+  },1000);
+}
+
+function openModeSelect(items,label){
+  pendingItems=items;
+  pendingLabel=label;
+  document.getElementById('mode-part-label').textContent=label;
+  document.getElementById('time-select-box').style.display='none';
+  showScreen('s-mode');
+}
+
+function chooseMode(mode){
+  gameMode=mode;
+  const box=document.getElementById('time-select-box');
+  if(mode==='timeattack'){
+    box.style.display='block';
+    return;
+  }
+  timeLimit=0;
+  remainingTime=0;
+  beginSelectedGame();
+}
+
+function chooseTime(seconds){
+  gameMode='timeattack';
+  timeLimit=seconds;
+  remainingTime=seconds;
+  beginSelectedGame();
+}
+
+function beginSelectedGame(){
+  if(!pendingItems || !pendingLabel) return;
+  startGame(pendingItems, pendingLabel);
+}
+
+function startGame(items,label){
+  const d=DB[exam||'jcs'];
+  lastPlayedItems=[...items];
+  lastPlayedLabel=label;
+  partKey=label;words=[...items].sort(()=>Math.random()-.5);
+  idx=0;typed='';combo=0;bestCombo=0;totalWords=0;totalChars=0;totalErrors=0;
+  sessionWrong=[];startTime=null;clearInterval(wpmTimer); clearInterval(timerInterval);
+  if(gameMode==='timeattack'){
+    remainingTime=timeLimit||60;
+  } else {
+    timeLimit=0;
+    remainingTime=0;
+  }
+  updateTimerUI();
+  const badge=document.getElementById('g-badge');
+  badge.textContent=d.badge;
+  const isJcs=exam==='jcs';
+  badge.style.cssText=`background:${isJcs?'var(--indigo-t)':'var(--green-t)'};color:${isJcs?'var(--indigo)':'var(--green)'};border:1px solid ${isJcs?'var(--indigo)':'var(--green)'}`;
+  document.getElementById('g-pname').textContent=label;
+  document.getElementById('g-prog').style.background=d.prog;
+  document.getElementById('wc-lbl').textContent=exam==='toeic'?'MEANING':'DEFINITION';
+  showScreen('s-game');
+  if(gameMode==='timeattack') startTimer();
+  loadWord();
+}
+
+function buildDots(){
+  document.getElementById('dot-row').innerHTML=words.map((_,i)=>{
+    let c='dot';if(i<idx)c+=' done';else if(i===idx)c+=' cur';
+    return `<div class="${c}"></div>`;
+  }).join('');
+}
+
+function loadWord(){
+  if(idx>=words.length){endGame();return;}
+  const item=words[idx];
+  const ko=isKorean(item.w);
+  document.getElementById('wc-mean').textContent=item.m;
+  document.getElementById('wc-ctx').textContent=item.c?'→ '+item.c:'';
+  
+  document.getElementById('h-len').textContent=item.w.length+'글자';
+  
+  document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
+  document.getElementById('g-cnt').textContent=idx+' / '+words.length;
+  
+  const badge=document.getElementById('lang-badge');
+  if(ko){badge.textContent='KO';badge.className='lang-badge ko';}
+  else{badge.textContent='EN';badge.className='lang-badge en';}
+  
+  document.getElementById('g-input').placeholder=ko?'한글로 타이핑 후 엔터...':'Type then press Enter...';
+  
+  buildDots();
+  typed='';
+  renderWord();
+  document.getElementById('g-input').value='';
+  
+  setTimeout(() => { 
+    const gInput = document.getElementById('g-input');
+    if(gInput) gInput.focus(); 
+  }, 100);
+}
+
+function renderWord(){
+  let html='';
+  for(let i=0; i<typed.length; i++){
+    html+=`<span style="color: var(--text);">${typed[i]}</span>`;
+  }
+  html+=`<span class="caret"></span>`;
+  document.getElementById('tw').innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// 판정 및 엔터키 제출
+// ══════════════════════════════════════════════════════════════════
+function submitAnswer(val){
+  if(idx>=words.length)return;
+  
+  playSound(sfx.page); // 🔊 엔터 치면 무조건 페이지 소리 재생
+
+  const w=words[idx].w;
+  if(!startTime){startTime=Date.now();wpmTimer=setInterval(updateStats,2000);}
+
+  if(wordsMatch(val.trim(), w)){
+    totalWords++;totalChars+=w.length;combo++;bestCombo=Math.max(bestCombo,combo);
+    document.getElementById('g-combo').textContent=combo;
+    const chip=document.getElementById('h-combo');
+    if(combo>=3){chip.style.display='inline';chip.textContent='🔥 '+combo+' COMBO!';}
+    else chip.style.display='none';
+    showPop(combo>=5?'🔥 +'+combo:'✓','var(--success)');
+  } else {
+    totalErrors++;combo=0;
+    document.getElementById('g-combo').textContent='0';
+    document.getElementById('h-combo').style.display='none';
+    showPop('✗','var(--error)');
+    const tw=document.getElementById('tw');
+    tw.classList.add('shake');setTimeout(()=>tw.classList.remove('shake'),200);
+    sessionWrong.push({...words[idx],exam:exam,examLabel:DB[exam]?.badge||'커스텀'});
+  }
+
+  document.getElementById('g-input').value='';
+  typed='';
+  idx++;
+  document.getElementById('g-prog').style.width=(idx/words.length*100).toFixed(0)+'%';
+  document.getElementById('g-cnt').textContent=idx+' / '+words.length;
+  loadWord();
+}
+
+const gInput=document.getElementById('g-input');
+gInput.addEventListener('compositionstart',()=>{ isComposing=true; });
+gInput.addEventListener('compositionend',function(){
+  isComposing=false; typed=this.value; renderWord(); 
+});
+gInput.addEventListener('input',function(){
+  typed=this.value; renderWord(); 
+  playSound(sfx.keyboard); // 🔊 타이핑 소리
+});
+gInput.addEventListener('keydown', function(e) {
+  if(e.key === 'Enter') {
+    if(e.isComposing || isComposing) return;
+    submitAnswer(this.value);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+//  기타 기능 (통계, 스킵, 오답노트 등)
+// ══════════════════════════════════════════════════════════════════
+function updateStats(){
+  if(!startTime||totalChars===0)return;
+  const m=(Date.now()-startTime)/60000;
+  document.getElementById('g-wpm').textContent=Math.round((totalChars/5)/m);
+  const acc=(totalChars+totalErrors)>0?Math.round(totalChars/(totalChars+totalErrors)*100):100;
+  document.getElementById('g-acc').textContent=acc+'%';
+}
+
+function showPop(text,color){
+  const a=document.getElementById('type-area');
+  const el=document.createElement('div');el.className='pop';
+  el.textContent=text;el.style.color=color||'var(--success)';
+  el.style.left=(20+Math.random()*60)+'%';el.style.top='10%';
+  a.appendChild(el);setTimeout(()=>el.remove(),700);
+}
+
+function skip(){
+  if(idx>=words.length)return;
+  playSound(sfx.button);
+  sessionWrong.push({...words[idx],exam:exam,examLabel:DB[exam]?.badge||'커스텀'});
+  combo=0;document.getElementById('g-combo').textContent='0';
+  document.getElementById('h-combo').style.display='none';
+  idx++;document.getElementById('g-input').value='';typed='';loadWord();
+}
+
+function exitGame(){
+  if(!confirm('게임을 중단하고 파트 선택 화면으로 돌아가시겠습니까?')) return;
+  clearInterval(wpmTimer); 
+  clearInterval(timerInterval);
+  gopart();
+}
+
+function endGame(){
+  clearInterval(timerInterval);
+  clearInterval(wpmTimer);
+  const isTimeOver = gameMode==='timeattack' && remainingTime<=0 && idx<words.length;
+  const mins=startTime?(Date.now()-startTime)/60000:1;
+  const wpm=Math.round((totalChars/5)/Math.max(0.01,mins));
+  const acc=(totalChars+totalErrors)>0?Math.round(totalChars/(totalChars+totalErrors)*100):100;
+  
+  // 🔊 결과 소리 재생
+  if (acc === 100) playSound(sfx.over_perfect);
+  else if (acc <= 30) playSound(sfx.over_bad);
+
+  document.getElementById('res-title').textContent=isTimeOver?'TIME OVER':'Result';
+  document.getElementById('res-icon').textContent=isTimeOver?'⏰':acc>=90?'🎉':acc>=70?'👍':'💪';
+  document.getElementById('res-sub').textContent=isTimeOver?`${partKey} — 시간이 종료되었어요`:`${partKey} — SESSION COMPLETE`;
+  document.getElementById('r-wpm').textContent=wpm;
+  document.getElementById('r-acc').textContent=acc+'%';
+  document.getElementById('r-words').textContent=totalWords;
+  document.getElementById('r-combo').textContent=bestCombo;
+  document.querySelectorAll('.res-val').forEach(el=>el.style.color=DB[exam]?.prog||'var(--indigo)');
+  const rw=document.getElementById('res-wrong'),rl=document.getElementById('rw-list');
+  rl.innerHTML='';
+  if(sessionWrong.length>0){
+    rw.style.display='block';
+    sessionWrong.forEach(w=>{
+      const d=document.createElement('div');d.className='rw-item';
+      d.innerHTML=`<span class="rw-word">${w.w}</span><span class="rw-mean">${w.m.slice(0,40)}…</span>`;
+      rl.appendChild(d);
+    });
+  }else rw.style.display='none';
+  showScreen('s-result');
+}
+
+// 🚀 [복구] 완벽하게 동작하는 다시 풀기 기능
+function retry() {
+  if (typeof playSound === 'function') playSound(sfx.button);
+  
+  if (partKey === '추가한 문제') return playCustom();
+  if (partKey && partKey.includes('오답 복습')) return playWrongPart(partKey.replace(' 오답 복습', ''));
+  
+  const currentDB = DB[exam || 'jcs'];
+  if (partKey && currentDB && currentDB.parts[partKey]) {
+    pendingItems=currentDB.parts[partKey].items; pendingLabel=partKey; beginSelectedGame();
+  } else {
+    goHome();
+  }
+}
+
+// 💡 [유지] 질문자님이 좋아하셨던 카운트 증가 방식 오답 저장
+function saveWrong(){
+  if(typeof playSound === 'function') playSound(sfx.button);
+  if(sessionWrong.length===0){toast('저장할 오답이 없어요 🎉');return;}
+  let added=0;
+  sessionWrong.forEach(item=>{
+    const exists=wrongNote.find(n=>n.w===item.w);
+    if(exists)exists.cnt=(exists.cnt||1)+1;
+    else{wrongNote.push({...item,cnt:1,savedAt:Date.now()});added++;}
+  });
+  save();toast(`오답노트에 ${added}개 추가됐어요!`);
+  sessionWrong=[]; // 💡 저장 후 비워주기 추가
+}
+
+function renderWrong(){
+  showWrongParts();
+}
+
+function showWrongParts() {
+  const cnt = wrongNote.length;
+  document.getElementById('wrong-main-title').textContent = '오답 노트';
+  document.getElementById('wrong-cnt').textContent = '총 ' + cnt + '개';
+
+  const partView = document.getElementById('wrong-part-view');
+  const wordView = document.getElementById('wrong-word-view');
+  const partGrid = document.getElementById('wrong-part-grid');
+
+  partView.style.display = 'block';
+  wordView.style.display = 'none';
+
+  if(cnt === 0) {
+    partGrid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1; padding-top:40px;">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">아직 저장된 오답이 없어요</div>
+      </div>`;
+    return;
+  }
+
+  const groups = {};
+  wrongNote.forEach(item => {
+    const label = item.examLabel || '기타';
+    if(!groups[label]) groups[label] = [];
+    groups[label].push(item);
+  });
+
+  partGrid.innerHTML = Object.keys(groups).map(label => {
+    const items = groups[label];
+    
+    // 🚀 [복구] 이름에 정처기가 포함되어 있으면 파란색으로 표시
+    const isJcs = label.includes('정처기') || label.includes('정보처리');
+    
+    const color = isJcs ? 'var(--indigo)' : (label==='커스텀' || label==='추가한 문제' ? 'var(--amber)' : 'var(--green)');
+    const bgColor = isJcs ? 'var(--indigo-t)' : (label==='커스텀' || label==='추가한 문제' ? 'var(--amber-t)' : 'var(--green-t)');
+
+    return `<div class="part-card" style="border-color:${color}; background:${bgColor}" onclick="showWrongWords('${label}')">
+      <div class="part-card-cnt" style="background:white; color:${color}">${items.length}단어</div>
+      <div class="part-name" style="color:${color}; font-weight:700; font-size:16px;">${label}</div>
+      <div class="part-desc">클릭하여 오답 확인 및 복습</div>
+    </div>`;
+  }).join('');
+}
+
+// 💡 [유지] 질문자님이 만족하셨던 완벽한 디자인의 오답노트 상세 보기
+function showWrongWords(label) {
+  if(typeof playSound === 'function') playSound(sfx.button); // 🔊 사운드 추가
+  const filteredNotes = wrongNote.filter(n => (n.examLabel || '기타') === label);
+
+  document.getElementById('wrong-main-title').textContent = '오답 노트';
+  document.getElementById('wrong-cnt').textContent = ''; 
+  document.getElementById('wrong-sub-title').textContent = label;
+
+  document.getElementById('wrong-part-view').style.display = 'none';
+  document.getElementById('wrong-word-view').style.display = 'flex';
+
+  const list = document.getElementById('wrong-list');
+  const actions = document.getElementById('wrong-actions');
+
+  isWordMasked = false;
+  isMeanMasked = false;
+  list.className = 'note-list';
+
+  list.innerHTML = filteredNotes.map((item) => {
+    const originalIndex = wrongNote.findIndex(n => n.w === item.w);
+    return `<div class="note-item">
+      <div class="note-word" onclick="this.classList.toggle('revealed')">${item.w}</div>
+      <div class="note-info">
+        <div class="note-mean" onclick="this.classList.toggle('revealed')">${item.m}</div>
+        <div class="note-meta">
+          ${(item.cnt||1)>1 ? `<span class="note-cnt">⚠ ${item.cnt}회 틀림</span>` : ''}
+        </div>
+      </div>
+      <button class="note-del" onclick="delWrong(${originalIndex}, '${label}')">✕</button>
+    </div>`;
+  }).join('');
+
+  const countDiv = document.getElementById('wrong-list-count');
+  countDiv.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+      <div class="mask-toggles" style="display:flex; gap:8px;">
+        <button id="btn-mask-word" class="mask-btn" onclick="toggleMask('word')">단어 가리기</button>
+        <button id="btn-mask-mean" class="mask-btn" onclick="toggleMask('mean')">뜻 가리기</button>
+      </div>
+      <span>${filteredNotes.length}개</span>
+    </div>
+  `;
+
+  actions.innerHTML = `
+    <button class="btn-amber" onclick="playWrongPart('${label}')" style="flex:1">이 파트 오답만 다시 풀기 →</button>
+    <button class="btn-gray" onclick="clearWrongPart('${label}')">전체 삭제</button>
+  `;
+}
+
+function toggleMask(type) {
+  playSound(sfx.button);
+  const list = document.getElementById('wrong-list');
+  if (type === 'word') {
+    isWordMasked = !isWordMasked;
+    document.getElementById('btn-mask-word').classList.toggle('active', isWordMasked);
+    list.classList.toggle('mask-word', isWordMasked);
+  } else {
+    isMeanMasked = !isMeanMasked;
+    document.getElementById('btn-mask-mean').classList.toggle('active', isMeanMasked);
+    list.classList.toggle('mask-mean', isMeanMasked);
+  }
+}
+
+function delWrong(i, currentLabel){
+  playSound(sfx.button);
+  wrongNote.splice(i,1); save();
+  const remaining = wrongNote.filter(n => (n.examLabel || '기타') === currentLabel);
+  if(remaining.length === 0) showWrongParts();
+  else showWrongWords(currentLabel);
+}
+
+function clearWrongPart(label){
+  playSound(sfx.button);
+  if(confirm(`'${label}' 파트의 오답 노트를 전부 삭제할까요?`)){
+    wrongNote = wrongNote.filter(n => (n.examLabel || '기타') !== label);
+    save(); showWrongParts();
+  }
+}
+
+function playWrongPart(label){
+  playSound(sfx.button);
+  const filteredNotes = wrongNote.filter(n => (n.examLabel || '기타') === label);
+  if(filteredNotes.length === 0) return;
+  exam = label.includes('TOEIC') ? 'toeic' : 'jcs';
+  openModeSelect(filteredNotes.map(n=>({w:n.w, m:n.m, c:n.c||''})), `${label} 오답 복습`);
+}
+
+function addCustom(){
+  playSound(sfx.button);
+  const word=document.getElementById('f-word').value.trim();
+  const mean=document.getElementById('f-mean').value.trim();
+  const ctx=document.getElementById('f-ctx').value.trim();
+  const cat=document.getElementById('f-cat').value.trim()||'내 문제장';
+  if(!word||!mean){toast('단어와 뜻은 필수예요!');return;}
+  if(customWords.find(c=>c.w===word)){toast('이미 추가된 문제예요');return;}
+  customWords.push({w:word,m:mean,c:ctx,cat,addedAt:Date.now()});
+  save();
+  ['f-word','f-mean','f-ctx','f-cat'].forEach(id=>document.getElementById(id).value='');
+  renderCustom();toast('문제가 추가됐어요!');
+}
+
+function renderCustom(){
+  const list=document.getElementById('custom-list');
+  const empty=document.getElementById('custom-empty');
+  const playBtn=document.getElementById('play-custom-btn');
+  if(customWords.length===0){list.style.display='none';empty.style.display='block';playBtn.disabled=true;return;}
+  list.style.display='flex';empty.style.display='none';playBtn.disabled=false;
+  list.innerHTML=customWords.map((item,i)=>`
+    <div class="custom-item">
+      <div class="ci-word">${item.w}</div>
+      <div class="ci-info">
+        <div class="ci-mean">${item.m}</div>
+        ${item.c?`<div class="ci-ctx">${item.c}</div>`:''}
+        ${item.cat?`<span class="ci-cat">#${item.cat}</span>`:''}
+      </div>
+      <button class="ci-del" onclick="delCustom(${i})">✕</button>
+    </div>`).join('');
+}
+
+function delCustom(i){playSound(sfx.button); customWords.splice(i,1);save();renderCustom();}
+function playCustom(){
+  playSound(sfx.button);
+  if(customWords.length===0){toast('추가된 문제가 없어요');return;}
+  exam=exam||'jcs';
+  openModeSelect(customWords.map(c=>({w:c.w,m:c.m,c:c.c||''})),'추가한 문제');
+}
+
+// 이벤트 리스너 세팅
+document.getElementById('f-word').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('f-mean').focus();});
+document.getElementById('s-game').addEventListener('click', function() {
+  const gInput = document.getElementById('g-input');
+  if(gInput) gInput.focus();
+});
+
+renderCustom();
+selExam('jcs'); // 처음 시작할 때 정처기 기본 선택
+
+// 🔊 화면 어디든 클릭하면 'button_snd' 재생하기
+document.addEventListener('click', function(e) {
+  // 입력창(input, textarea)을 클릭할 때는 예외
+  if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+    playSound(sfx.button);
+  }
+});
+</script>
+</body>
+</html>

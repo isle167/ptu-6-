@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+# VSCode
+.vscode/
+
+# Node (혹시 나중에 추가할 경우)
+node_modules/
+npm-debug.log*
+
+# 기타
+*.log
+.env
