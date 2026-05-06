@@ -4,9 +4,13 @@
 
 (function () {
   // 채팅 기록
-  let chatHistory = [];
+  let chatHistory = [];           // 현재 진행 중인 대화 (AI에게 전달)
+  let previousHistory = [];       // 닫힐 때 저장된 이전 대화
   let isOpen = false;
   let isLoading = false;
+  let suggestedLoaded = false;
+  let lastContextHash = '';
+  let previousExpanded = false;   // 이전 기록이 펼쳐져 있는지
 
   // ── HTML 삽입 ──────────────────────────────
   const container = document.createElement('div');
@@ -46,11 +50,11 @@
       /* 채팅창 */
       #ai-chatbox {
         position: fixed;
+        top: 70px;
         bottom: 90px;
         right: 28px;
         z-index: 9998;
-        width: 340px;
-        max-height: 500px;
+        width: 380px;
         background: var(--card, #fff);
         border: 1px solid var(--border, #e5e7eb);
         border-radius: 20px;
@@ -59,7 +63,6 @@
         flex-direction: column;
         overflow: hidden;
 
-        /* 애니메이션 */
         opacity: 0;
         transform: translateY(16px) scale(0.97);
         pointer-events: none;
@@ -71,7 +74,18 @@
         pointer-events: all;
       }
 
-      /* 채팅창 헤더 */
+      @media (max-height: 600px) {
+        #ai-chatbox { top: 60px; bottom: 80px; }
+      }
+      @media (max-width: 480px) {
+        #ai-chatbox {
+          width: auto;
+          left: 12px;
+          right: 12px;
+        }
+      }
+
+      /* 헤더 */
       #ai-chat-header {
         display: flex;
         align-items: center;
@@ -79,6 +93,7 @@
         padding: 14px 16px;
         background: var(--indigo, #6366f1);
         color: white;
+        flex-shrink: 0;
       }
       #ai-chat-header .header-left {
         display: flex;
@@ -110,6 +125,139 @@
       }
       #ai-chat-close:hover { background: rgba(255,255,255,0.35); }
 
+      /* 예상 질문 영역 */
+      #ai-suggest-area {
+        padding: 12px 14px 10px;
+        border-bottom: 1px solid var(--border, #e5e7eb);
+        background: var(--bg, #f9fafb);
+        flex-shrink: 0;
+      }
+      #ai-suggest-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      #ai-suggest-title {
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        font-family: var(--f-mono, monospace);
+        color: var(--muted, #9ca3af);
+        font-weight: 600;
+      }
+      #ai-suggest-refresh {
+        background: none;
+        border: none;
+        color: var(--muted, #9ca3af);
+        cursor: pointer;
+        font-size: 13px;
+        padding: 2px 6px;
+        border-radius: 6px;
+        transition: all 0.15s;
+        line-height: 1;
+      }
+      #ai-suggest-refresh:hover {
+        background: var(--bg2, #f3f4f6);
+        color: var(--indigo, #6366f1);
+      }
+      #ai-suggest-refresh:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      #ai-suggest-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .ai-suggest-chip {
+        background: var(--card, #fff);
+        border: 1px solid var(--border, #e5e7eb);
+        color: var(--text, #111);
+        padding: 7px 12px;
+        border-radius: 20px;
+        font-size: 12.5px;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: inherit;
+        line-height: 1.3;
+        text-align: left;
+      }
+      .ai-suggest-chip:hover {
+        background: var(--indigo, #6366f1);
+        color: white;
+        border-color: var(--indigo, #6366f1);
+        transform: translateY(-1px);
+      }
+      .ai-suggest-chip:active { transform: translateY(0); }
+      .ai-suggest-loading {
+        font-size: 12px;
+        color: var(--muted, #9ca3af);
+        padding: 4px 0;
+        font-family: var(--f-mono, monospace);
+        letter-spacing: 0.5px;
+      }
+      .ai-suggest-empty {
+        font-size: 12px;
+        color: var(--muted, #9ca3af);
+        padding: 4px 0;
+      }
+
+      /* 이전 기록 보기 버튼 */
+      #ai-history-bar {
+        flex-shrink: 0;
+        display: none;
+        padding: 8px 12px;
+        background: var(--bg, #f9fafb);
+        border-bottom: 1px solid var(--border, #e5e7eb);
+      }
+      #ai-history-bar.show { display: block; }
+      #ai-history-toggle {
+        width: 100%;
+        background: var(--card, #fff);
+        border: 1px solid var(--border, #e5e7eb);
+        color: var(--muted, #9ca3af);
+        padding: 7px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        cursor: pointer;
+        font-family: var(--f-mono, monospace);
+        letter-spacing: 0.5px;
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      #ai-history-toggle:hover {
+        border-color: var(--indigo, #6366f1);
+        color: var(--indigo, #6366f1);
+      }
+
+      /* 이전 기록 영역 */
+      #ai-history-messages {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px;
+        background: var(--bg2, #f3f4f6);
+        border-bottom: 1px dashed var(--border, #e5e7eb);
+        max-height: 50%;
+        overflow-y: auto;
+        flex-shrink: 0;
+      }
+      #ai-history-messages.show { display: flex; }
+      #ai-history-messages::-webkit-scrollbar { width: 4px; }
+      #ai-history-messages::-webkit-scrollbar-thumb { background: var(--border, #e5e7eb); border-radius: 4px; }
+      .ai-history-divider {
+        font-size: 10px;
+        color: var(--muted, #9ca3af);
+        font-family: var(--f-mono, monospace);
+        letter-spacing: 1px;
+        text-align: center;
+        padding: 4px 0;
+      }
+      .ai-msg.history { opacity: 0.7; }
+
       /* 메시지 영역 */
       #ai-chat-messages {
         flex: 1;
@@ -123,7 +271,6 @@
       #ai-chat-messages::-webkit-scrollbar { width: 4px; }
       #ai-chat-messages::-webkit-scrollbar-thumb { background: var(--border, #e5e7eb); border-radius: 4px; }
 
-      /* 말풍선 */
       .ai-msg {
         max-width: 82%;
         padding: 10px 13px;
@@ -132,6 +279,7 @@
         line-height: 1.55;
         word-break: break-word;
         animation: msg-in 0.18s ease;
+        white-space: pre-wrap;
       }
       @keyframes msg-in {
         from { opacity: 0; transform: translateY(6px); }
@@ -148,6 +296,19 @@
         background: var(--bg2, #f3f4f6);
         color: var(--text, #111);
         border-bottom-left-radius: 4px;
+      }
+      .ai-msg .img-tag {
+        display: inline-block;
+        font-size: 11px;
+        background: rgba(255,255,255,0.25);
+        padding: 2px 7px;
+        border-radius: 10px;
+        margin-bottom: 4px;
+        font-family: var(--f-mono, monospace);
+      }
+      .ai-msg.bot .img-tag {
+        background: var(--border, #e5e7eb);
+        color: var(--muted, #6b7280);
       }
 
       /* 로딩 점 */
@@ -180,6 +341,7 @@
         padding: 10px 12px;
         border-top: 1px solid var(--border, #e5e7eb);
         background: var(--card, #fff);
+        flex-shrink: 0;
       }
       #ai-chat-input {
         flex: 1;
@@ -215,7 +377,7 @@
       #ai-chat-send:hover { background: #4f46e5; transform: scale(1.08); }
       #ai-chat-send:disabled { background: var(--border, #e5e7eb); cursor: not-allowed; transform: none; }
 
-      /* 초기 안내 메시지 */
+      /* 초기 안내 */
       #ai-chat-empty {
         text-align: center;
         color: var(--muted, #9ca3af);
@@ -226,13 +388,11 @@
       #ai-chat-empty .empty-emoji { font-size: 32px; margin-bottom: 8px; }
     </style>
 
-    <!-- 플로팅 버튼 -->
     <button id="ai-fab" onclick="toggleChatbot()">
       <span class="fab-emoji">😵</span>
       <span>도움!</span>
     </button>
 
-    <!-- 채팅창 -->
     <div id="ai-chatbox">
       <div id="ai-chat-header">
         <div class="header-left">
@@ -241,6 +401,27 @@
         </div>
         <button id="ai-chat-close" onclick="toggleChatbot()">✕</button>
       </div>
+
+      <!-- 예상 질문 -->
+      <div id="ai-suggest-area">
+        <div id="ai-suggest-header">
+          <div id="ai-suggest-title">💡 예상 질문</div>
+          <button id="ai-suggest-refresh" onclick="refreshSuggestions()" title="다시 생성">↻</button>
+        </div>
+        <div id="ai-suggest-chips">
+          <div class="ai-suggest-empty">화면을 분석할 준비가 되었어요.</div>
+        </div>
+      </div>
+
+      <!-- 이전 기록 보기 토글 -->
+      <div id="ai-history-bar">
+        <button id="ai-history-toggle" onclick="toggleHistory()">
+          <span id="ai-history-toggle-text">↶ 이전 기록 보기</span>
+        </button>
+      </div>
+
+      <!-- 이전 기록 메시지 (펼칠 때만 보임) -->
+      <div id="ai-history-messages"></div>
 
       <div id="ai-chat-messages">
         <div id="ai-chat-empty">
@@ -257,24 +438,399 @@
   `;
   document.body.appendChild(container);
 
+  // ── 에러 메시지를 사용자 친화적으로 변환 ──
+  function humanizeError(err) {
+    const msg = (err && err.message) ? String(err.message).toLowerCase() : '';
+
+    if (msg.includes('credit') && msg.includes('low')) {
+      return '⚠️ AI 크레딧이 부족합니다.\n관리자에게 문의해주세요.';
+    }
+    if (msg.includes('rate_limit') || msg.includes('rate limit')) {
+      return '⚠️ 요청이 너무 많습니다.\n잠시 후 다시 시도해주세요.';
+    }
+    if (msg.includes('invalid') && msg.includes('api') && msg.includes('key')) {
+      return '⚠️ API 키 설정에 문제가 있습니다.\n관리자에게 문의해주세요.';
+    }
+    if (msg.includes('overloaded') || msg.includes('502') || msg.includes('503')) {
+      return '⚠️ AI 서버가 혼잡합니다.\n잠시 후 다시 시도해주세요.';
+    }
+    if (msg.includes('image') || msg.includes('media_type')) {
+      return '⚠️ 이미지 처리 중 오류가 발생했습니다.\n다른 화면에서 시도해보세요.';
+    }
+    if (msg.includes('failed to fetch') || msg.includes('networkerror')) {
+      return '⚠️ 네트워크 연결을 확인해주세요.';
+    }
+    if (msg.includes('http 4')) {
+      return '⚠️ 요청에 문제가 있어요.\n다시 시도해주세요.';
+    }
+    if (msg.includes('http 5')) {
+      return '⚠️ 서버에 일시적 문제가 있어요.\n잠시 후 다시 시도해주세요.';
+    }
+    return '죄송해요, 오류가 발생했어요. 다시 시도해주세요.';
+  }
+
   // ── 채팅창 열기/닫기 ──────────────────────
   window.toggleChatbot = function () {
     isOpen = !isOpen;
     document.getElementById('ai-chatbox').classList.toggle('open', isOpen);
+
     if (isOpen) {
+      // 열릴 때: 현재 대화는 비어있어야 함 (이미 닫힐 때 옮겨졌음)
       setTimeout(() => document.getElementById('ai-chat-input').focus(), 220);
+
+      // 이전 기록 버튼 표시 여부
+      updateHistoryBar();
+
+      // 예상 질문 로드
+      const ctx = collectScreenContext();
+      const hash = (ctx.contextText + (ctx.imageSrc || '')).slice(0, 200);
+      if (!suggestedLoaded || hash !== lastContextHash) {
+        lastContextHash = hash;
+        suggestedLoaded = true;
+        loadSuggestions(ctx);
+      }
+    } else {
+      // 닫힐 때: 현재 대화를 이전 기록으로 이관
+      if (chatHistory.length > 0) {
+        previousHistory = chatHistory.slice();
+        chatHistory = [];
+      }
+      // 메시지 영역 비우기 (다음에 열면 깔끔하게)
+      const msgs = document.getElementById('ai-chat-messages');
+      msgs.innerHTML = `
+        <div id="ai-chat-empty">
+          <div class="empty-emoji">🤖</div>
+          모르는 문제나 개념을<br>자유롭게 질문해보세요!
+        </div>
+      `;
+      // 이전 기록 영역도 접기
+      collapseHistory();
     }
   };
 
+  // ── 이전 기록 바 표시/숨김 갱신 ───────────
+  function updateHistoryBar() {
+    const bar = document.getElementById('ai-history-bar');
+    const toggleText = document.getElementById('ai-history-toggle-text');
+    if (previousHistory.length > 0) {
+      bar.classList.add('show');
+      toggleText.textContent = `↶ 이전 기록 보기 (${previousHistory.length}개 메시지)`;
+    } else {
+      bar.classList.remove('show');
+    }
+  }
+
+  // ── 이전 기록 펼치기/접기 ─────────────────
+  window.toggleHistory = function () {
+    if (previousExpanded) {
+      collapseHistory();
+    } else {
+      expandHistory();
+    }
+  };
+
+  function expandHistory() {
+    const histEl = document.getElementById('ai-history-messages');
+    const toggleText = document.getElementById('ai-history-toggle-text');
+    histEl.innerHTML = '';
+
+    previousHistory.forEach(msg => {
+      const div = document.createElement('div');
+      div.className = `ai-msg history ${msg.role === 'user' ? 'user' : 'bot'}`;
+
+      // content가 배열(이미지 포함)인 경우와 문자열인 경우 처리
+      if (Array.isArray(msg.content)) {
+        let textPart = '';
+        let hasImage = false;
+        msg.content.forEach(c => {
+          if (c.type === 'text') textPart += c.text;
+          if (c.type === 'image') hasImage = true;
+        });
+        if (hasImage) {
+          const tag = document.createElement('div');
+          tag.className = 'img-tag';
+          tag.textContent = '🖼 이미지 첨부';
+          div.appendChild(tag);
+        }
+        const txt = document.createElement('div');
+        txt.textContent = textPart;
+        div.appendChild(txt);
+      } else {
+        div.textContent = msg.content;
+      }
+      histEl.appendChild(div);
+    });
+
+    const divider = document.createElement('div');
+    divider.className = 'ai-history-divider';
+    divider.textContent = '─── 이전 기록 끝 ───';
+    histEl.appendChild(divider);
+
+    histEl.classList.add('show');
+    toggleText.textContent = '▲ 이전 기록 접기';
+    previousExpanded = true;
+  }
+
+  function collapseHistory() {
+    const histEl = document.getElementById('ai-history-messages');
+    const toggleText = document.getElementById('ai-history-toggle-text');
+    histEl.classList.remove('show');
+    histEl.innerHTML = '';
+    if (previousHistory.length > 0) {
+      toggleText.textContent = `↶ 이전 기록 보기 (${previousHistory.length}개 메시지)`;
+    }
+    previousExpanded = false;
+  }
+
+  // ── 화면 컨텍스트 수집 ─────────────────────
+  function collectScreenContext() {
+    const screens = document.querySelectorAll('.screen');
+    let activeScreen = null;
+    for (const s of screens) {
+      const cs = window.getComputedStyle(s);
+      if (cs.display !== 'none' && s.offsetParent !== null) {
+        activeScreen = s;
+        break;
+      }
+    }
+
+    let screenId = activeScreen ? activeScreen.id : 'unknown';
+    let contextText = '';
+    let screenLabel = '';
+    let imageSrc = '';   // 이미지 형식 문제일 때 채워짐
+
+    if (screenId === 's-game') {
+      screenLabel = '타이핑 훈련';
+      const partName = (document.getElementById('g-pname')?.textContent || '').trim();
+      const wcLbl    = (document.getElementById('wc-lbl')?.textContent || '').trim();
+      const wcMean   = (document.getElementById('wc-mean')?.textContent || '').trim();
+      const wcCtx    = (document.getElementById('wc-ctx')?.textContent || '').trim();
+      const hintAns  = (document.getElementById('hint-answer')?.textContent || '').trim();
+      const hintDesc = (document.getElementById('hint-desc')?.textContent || '').trim();
+      contextText = [
+        partName && `파트: ${partName}`,
+        wcLbl && wcMean && `${wcLbl}: ${wcMean}`,
+        wcCtx && `예문/설명: ${wcCtx}`,
+        hintAns && `정답: ${hintAns}`,
+        hintDesc && `해설: ${hintDesc}`
+      ].filter(Boolean).join('\n');
+    } else if (screenId === 's-past-exam') {
+      screenLabel = '기출문제 풀이';
+      const title = (document.getElementById('past-exam-title')?.textContent || '').trim();
+      const textView = document.getElementById('exam-text-view');
+      const imgView = document.getElementById('exam-image-view');
+      let body = '';
+      if (textView && textView.style.display !== 'none') {
+        body = (textView.innerText || textView.textContent || '').trim().slice(0, 2000);
+      } else if (imgView && imgView.style.display !== 'none' && imgView.src) {
+        body = '(이미지 형식 기출문제 - AI가 이미지를 직접 분석합니다)';
+        imageSrc = imgView.src;
+      }
+      contextText = [
+        title && `시험: ${title}`,
+        body && `문제 내용:\n${body}`
+      ].filter(Boolean).join('\n');
+    } else if (screenId === 's-wrong' || screenId === 's-exam-wrong') {
+      screenLabel = '오답 노트';
+      const titleEl = activeScreen?.querySelector('.page-title');
+      contextText = titleEl ? `현재 ${titleEl.textContent.trim()} 화면을 보고 있습니다.` : '';
+    } else if (screenId === 's-result' || screenId === 's-exam-result') {
+      screenLabel = '결과';
+      const title = activeScreen?.querySelector('.res-title')?.textContent?.trim() || '';
+      contextText = `${title} 결과 화면`;
+    } else {
+      screenLabel = activeScreen?.querySelector('.page-title, .home-title, .back-title')?.textContent?.trim() || '메인';
+      contextText = '';
+    }
+
+    return { screenId, screenLabel, contextText, imageSrc };
+  }
+
+  // ── 이미지를 base64로 변환 ─────────────────
+  async function imageUrlToBase64(url) {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          // "data:image/png;base64,iVBOR..." 에서 콤마 뒤만 추출
+          const result = reader.result;
+          const commaIdx = result.indexOf(',');
+          const mediaType = result.substring(5, result.indexOf(';'));
+          const data = result.substring(commaIdx + 1);
+          resolve({ mediaType, data });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (err) {
+      console.warn('[chatbot] 이미지 base64 변환 실패:', err);
+      return null;
+    }
+  }
+
+  // ── 예상 질문 렌더링 ───────────────────────
+  function renderSuggestions(questions) {
+    const chipsEl = document.getElementById('ai-suggest-chips');
+    chipsEl.innerHTML = '';
+    if (!questions || questions.length === 0) {
+      chipsEl.innerHTML = '<div class="ai-suggest-empty">예상 질문을 불러오지 못했어요.</div>';
+      return;
+    }
+    questions.forEach(q => {
+      const btn = document.createElement('button');
+      btn.className = 'ai-suggest-chip';
+      btn.textContent = q;
+      btn.onclick = () => {
+        if (isLoading) return;
+        const input = document.getElementById('ai-chat-input');
+        input.value = q;
+        sendChatMessage();
+      };
+      chipsEl.appendChild(btn);
+    });
+  }
+
+  function showSuggestionsLoading() {
+    const chipsEl = document.getElementById('ai-suggest-chips');
+    chipsEl.innerHTML = '<div class="ai-suggest-loading">화면 분석 중...</div>';
+  }
+
+  function fallbackSuggestions(ctx) {
+    const { screenId, contextText, imageSrc } = ctx;
+    if (screenId === 's-game' && contextText) {
+      const lines = contextText.split('\n');
+      const meanLine = lines.find(l => l.includes(':'));
+      const term = meanLine ? meanLine.split(':').slice(1).join(':').trim() : '';
+      if (term && term.length < 50) {
+        return [
+          `${term}이(가) 무슨 뜻이에요?`,
+          `${term} 더 쉽게 설명해주세요`,
+          `${term} 예제 알려주세요`,
+          `이거 외우는 팁 있나요?`
+        ];
+      }
+      return ['이 문제 해설해주세요', '비슷한 개념 더 알려주세요', '쉽게 외우는 방법은?'];
+    }
+    if (screenId === 's-past-exam') {
+      if (imageSrc) {
+        return [
+          '이 문제 풀이해주세요',
+          '핵심 포인트가 뭔가요?',
+          '답이 뭐예요?',
+          '왜 이게 답이에요?'
+        ];
+      }
+      return [
+        '이 문제 풀이 방법을 알려주세요',
+        '핵심 개념이 뭔가요?',
+        '함정 포인트가 있나요?',
+        '비슷한 유형 문제가 있나요?'
+      ];
+    }
+    return ['효과적인 학습 방법은?', '암기 팁을 알려주세요', '시험 전략이 궁금해요'];
+  }
+
+  // ── 예상 질문 로드 (AI 호출) ───────────────
+  async function loadSuggestions(ctx) {
+    showSuggestionsLoading();
+
+    // 텍스트도 이미지도 없으면 fallback
+    if (!ctx.contextText && !ctx.imageSrc) {
+      renderSuggestions(fallbackSuggestions(ctx));
+      return;
+    }
+
+    // 메시지 content 구성
+    let userContent;
+
+    if (ctx.imageSrc) {
+      // 이미지가 있으면 이미지 포함 메시지
+      const imgData = await imageUrlToBase64(ctx.imageSrc);
+      if (!imgData) {
+        renderSuggestions(fallbackSuggestions(ctx));
+        return;
+      }
+      userContent = [
+        {
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: imgData.mediaType,
+            data: imgData.data
+          }
+        },
+        {
+          type: 'text',
+          text: `학생이 위 이미지 형식의 ${ctx.screenLabel} 화면을 보고 있어요. ${ctx.contextText ? '\n\n' + ctx.contextText : ''}\n\n이 학생이 궁금해할 만한 짧은 질문 4개를 생성해주세요.\n규칙:\n- 각 질문은 20자 이내로 짧게\n- 구체적이고 바로 클릭하고 싶은 질문\n- 번호나 불릿 없이, 한 줄에 하나씩\n- 질문만 출력하고 다른 설명은 절대 하지 마세요\n\n질문 4개:`
+        }
+      ];
+    } else {
+      // 텍스트만
+      userContent = `당신은 학습 도우미입니다. 학생이 지금 다음 화면을 보고 있어요:\n\n[화면: ${ctx.screenLabel}]\n${ctx.contextText}\n\n이 학생이 궁금해할 만한 짧은 질문 4개를 생성해주세요. 규칙:\n- 각 질문은 20자 이내로 짧게\n- 구체적이고 바로 클릭하고 싶은 질문\n- 번호나 불릿 없이, 한 줄에 하나씩\n- 질문만 출력하고 다른 설명은 절대 하지 마세요\n\n질문 4개:`;
+    }
+
+    try {
+      const response = await fetch(
+        `${SUPABASE_URL}functions/v1/ai-chat`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: userContent }]
+          })
+        }
+      );
+      if (!response.ok) throw new Error('응답 오류');
+      const data = await response.json();
+      const text = (data.content && data.content[0] && data.content[0].text) || '';
+      const questions = text
+        .split('\n')
+        .map(l => l.replace(/^[\d\.\-\*\)\s]+/, '').replace(/^["']|["']$/g, '').trim())
+        .filter(l => l && l.length <= 50 && l.length >= 3)
+        .slice(0, 4);
+
+      renderSuggestions(questions.length > 0 ? questions : fallbackSuggestions(ctx));
+    } catch (err) {
+      console.warn('[chatbot] 예상 질문 생성 실패, fallback 사용:', err);
+      renderSuggestions(fallbackSuggestions(ctx));
+    }
+  }
+
+  window.refreshSuggestions = function () {
+    const btn = document.getElementById('ai-suggest-refresh');
+    if (btn.disabled) return;
+    btn.disabled = true;
+    const ctx = collectScreenContext();
+    lastContextHash = (ctx.contextText + (ctx.imageSrc || '')).slice(0, 200);
+    loadSuggestions(ctx).finally(() => {
+      setTimeout(() => { btn.disabled = false; }, 1000);
+    });
+  };
+
   // ── 메시지 추가 ────────────────────────────
-  function addMessage(role, text) {
+  function addMessage(role, text, hasImage) {
     const messagesEl = document.getElementById('ai-chat-messages');
     const empty = document.getElementById('ai-chat-empty');
     if (empty) empty.remove();
 
     const div = document.createElement('div');
     div.className = `ai-msg ${role}`;
-    div.textContent = text;
+    if (hasImage) {
+      const tag = document.createElement('div');
+      tag.className = 'img-tag';
+      tag.textContent = '🖼 이미지 첨부';
+      div.appendChild(tag);
+      const txt = document.createElement('div');
+      txt.textContent = text;
+      div.appendChild(txt);
+    } else {
+      div.textContent = text;
+    }
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
@@ -306,9 +862,59 @@
 
     input.value = '';
     input.style.height = 'auto';
-    addMessage('user', text);
 
-    chatHistory.push({ role: 'user', content: text });
+    // 새 대화 시작 시 펼쳐진 이전 기록은 자동으로 접기
+    if (chatHistory.length === 0 && previousExpanded) {
+      collapseHistory();
+    }
+
+    // 첫 메시지면 화면 컨텍스트 첨부 (이미지 포함 가능)
+    let userMessage;
+    let displayHasImage = false;
+
+    if (chatHistory.length === 0) {
+      const ctx = collectScreenContext();
+
+      if (ctx.imageSrc) {
+        // 이미지 포함
+        const imgData = await imageUrlToBase64(ctx.imageSrc);
+        if (imgData) {
+          userMessage = {
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: {
+                  type: 'base64',
+                  media_type: imgData.mediaType,
+                  data: imgData.data
+                }
+              },
+              {
+                type: 'text',
+                text: `[학생이 현재 "${ctx.screenLabel}" 화면을 보고 있고, 위 이미지가 그 문제입니다.${ctx.contextText ? '\n' + ctx.contextText : ''}]\n\n${text}`
+              }
+            ]
+          };
+          displayHasImage = true;
+        } else {
+          // 이미지 변환 실패 시 텍스트로만
+          userMessage = { role: 'user', content: text };
+        }
+      } else if (ctx.contextText) {
+        userMessage = {
+          role: 'user',
+          content: `[참고: 학생이 현재 "${ctx.screenLabel}" 화면을 보고 있습니다.\n${ctx.contextText}]\n\n${text}`
+        };
+      } else {
+        userMessage = { role: 'user', content: text };
+      }
+    } else {
+      userMessage = { role: 'user', content: text };
+    }
+
+    addMessage('user', text, displayHasImage);
+    chatHistory.push(userMessage);
 
     isLoading = true;
     sendBtn.disabled = true;
@@ -327,10 +933,16 @@
         }
       );
 
-      if (!response.ok) throw new Error('응답 오류');
-
       const data = await response.json();
-      const reply = data.content[0].text;
+
+      // 에러 응답 처리 (Anthropic API의 에러 본문을 그대로 받아서 분류)
+      if (!response.ok) {
+        const apiMsg = (data && data.error && data.error.message) || '';
+        throw new Error(apiMsg || `HTTP ${response.status}`);
+      }
+
+      const reply = data.content && data.content[0] && data.content[0].text;
+      if (!reply) throw new Error('응답 비어있음');
 
       chatHistory.push({ role: 'assistant', content: reply });
       removeTyping();
@@ -338,7 +950,7 @@
 
     } catch (err) {
       removeTyping();
-      addMessage('bot', '죄송해요, 오류가 발생했어요. 다시 시도해주세요.');
+      addMessage('bot', humanizeError(err));
       chatHistory.pop();
     }
 
@@ -347,7 +959,7 @@
     input.focus();
   };
 
-  // ── 엔터키 전송 (Shift+Enter는 줄바꿈) ────
+  // ── 엔터키 전송 ────────────────────────────
   document.getElementById('ai-chat-input').addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();

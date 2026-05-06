@@ -1,0 +1,33 @@
+# 환경 변수 / 시크릿
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+secrets/
+config.local.js
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 에디터
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 의존성 (필요 시)
+node_modules/
+package-lock.json
+
+# 빌드 출력
+dist/
+build/
+*.log
+
+# Supabase 로컬
+.supabase/
+supabase/.temp/
